@@ -1,8 +1,169 @@
-/*
+/**
+ * Radar Plugin Styles
+ */
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+/* Main container */
+.radar-view-container {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	overflow: hidden;
+}
 
-If your plugin does not need CSS, delete this file.
+.radar-main {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
 
-*/
+/* Toolbar */
+.radar-toolbar {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 12px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	flex-shrink: 0;
+}
+
+.radar-toolbar-btn {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 12px;
+	border-radius: var(--radius-s);
+	background: var(--interactive-normal);
+	color: var(--text-normal);
+	border: none;
+	cursor: pointer;
+	font-size: var(--font-ui-small);
+}
+
+.radar-toolbar-btn:hover {
+	background: var(--interactive-hover);
+}
+
+.radar-toolbar-btn-icon {
+	padding: 6px 8px;
+}
+
+.radar-toolbar-spacer {
+	flex: 1;
+}
+
+/* SVG Container */
+.radar-svg-container {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	padding: 20px;
+}
+
+.radar-svg {
+	width: 100%;
+	height: 100%;
+	max-width: 600px;
+	max-height: 600px;
+	transition: transform 0.2s ease;
+}
+
+/* Priority rings */
+.radar-priority-ring {
+	fill: none;
+	stroke: var(--background-modifier-border);
+	stroke-width: 1;
+}
+
+.radar-priority-label {
+	font-size: 10px;
+	fill: var(--text-muted);
+	font-weight: 500;
+}
+
+/* Category dividers */
+.radar-category-divider {
+	stroke: var(--background-modifier-border);
+	stroke-width: 1;
+}
+
+.radar-category-label {
+	font-size: 12px;
+	fill: var(--text-muted);
+	text-anchor: middle;
+	dominant-baseline: middle;
+}
+
+/* Blips */
+.radar-blip {
+	cursor: grab;
+	transition: transform 0.1s ease;
+}
+
+.radar-blip:hover {
+	transform: scale(1.1);
+}
+
+.radar-blip.dragging {
+	cursor: grabbing;
+}
+
+.radar-blip.dragging .radar-blip-circle {
+	stroke: var(--interactive-accent);
+	stroke-width: 2;
+}
+
+.radar-blip-circle {
+	fill: var(--interactive-accent);
+	stroke: none;
+	transition: stroke 0.1s ease, stroke-width 0.1s ease;
+}
+
+.radar-blip:hover .radar-blip-circle {
+	stroke: var(--interactive-accent-hover);
+	stroke-width: 2;
+}
+
+.radar-blip-title {
+	font-size: 11px;
+	fill: var(--text-normal);
+	text-anchor: middle;
+	pointer-events: none;
+	user-select: none;
+}
+
+/* Error message */
+.radar-error {
+	color: var(--text-error);
+	text-align: center;
+	padding: 20px;
+}
+
+/* Dark mode adjustments */
+.theme-dark .radar-priority-ring {
+	stroke: var(--background-modifier-border);
+}
+
+.theme-dark .radar-category-divider {
+	stroke: var(--background-modifier-border);
+}
+
+/* Mobile adjustments */
+@media (max-width: 600px) {
+	.radar-toolbar {
+		flex-wrap: wrap;
+	}
+
+	.radar-toolbar-spacer {
+		display: none;
+	}
+
+	.radar-svg-container {
+		padding: 10px;
+	}
+
+	.radar-blip-title {
+		font-size: 10px;
+	}
+}
