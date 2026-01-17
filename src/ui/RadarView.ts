@@ -140,13 +140,16 @@ export class RadarView extends TextFileView {
 			{
 				onBlipMove: (blipId, r, theta) => this.onBlipMove(blipId, r, theta),
 				onZoomChange: (zoom) => this.onZoomChange(zoom),
+				onPanChange: (panX, panY) => this.onPanChange(panX, panY),
 			}
 		);
 
-		// Apply saved zoom
-		if (this.radarData.viewState.zoom !== 1) {
-			this.renderer.setZoom(this.radarData.viewState.zoom);
-			this.interactions.setZoom(this.radarData.viewState.zoom);
+		// Apply saved view state (zoom and pan)
+		const { zoom, panX, panY } = this.radarData.viewState;
+		if (zoom !== 1 || panX !== 0 || panY !== 0) {
+			this.renderer.setTransform(zoom, panX, panY);
+			this.interactions.setZoom(zoom);
+			this.interactions.setPan(panX, panY);
 		}
 	}
 
@@ -201,6 +204,18 @@ export class RadarView extends TextFileView {
 
 		this.radarData.viewState.zoom = zoom;
 		this.renderer?.setZoom(zoom);
+		this.requestSave();
+	}
+
+	/**
+	 * Handle pan change
+	 */
+	private onPanChange(panX: number, panY: number): void {
+		if (!this.radarData) return;
+
+		this.radarData.viewState.panX = panX;
+		this.radarData.viewState.panY = panY;
+		this.renderer?.setPan(panX, panY);
 		this.requestSave();
 	}
 
@@ -283,7 +298,11 @@ export class RadarView extends TextFileView {
 	}
 
 	private resetZoom(): void {
+		// Reset both zoom and pan
 		this.onZoomChange(1);
+		this.onPanChange(0, 0);
+		this.interactions?.setZoom(1);
+		this.interactions?.setPan(0, 0);
 	}
 
 	/**

@@ -67,6 +67,12 @@
 	max-width: 600px;
 	max-height: 600px;
 	transition: transform 0.2s ease;
+	cursor: grab;
+}
+
+.radar-svg.panning {
+	cursor: grabbing;
+	transition: none; /* Disable transition during pan for responsiveness */
 }
 
 /* Priority rings */
@@ -98,11 +104,6 @@
 /* Blips */
 .radar-blip {
 	cursor: grab;
-	transition: transform 0.1s ease;
-}
-
-.radar-blip:hover {
-	transform: scale(1.1);
 }
 
 .radar-blip.dragging {
@@ -117,10 +118,13 @@
 .radar-blip-circle {
 	fill: var(--interactive-accent);
 	stroke: none;
-	transition: stroke 0.1s ease, stroke-width 0.1s ease;
+	transition: transform 0.1s ease, stroke 0.1s ease, stroke-width 0.1s ease;
+	transform-origin: center;
+	transform-box: fill-box;
 }
 
 .radar-blip:hover .radar-blip-circle {
+	transform: scale(1.2);
 	stroke: var(--interactive-accent-hover);
 	stroke-width: 2;
 }

@@ -9,6 +9,7 @@ import { cartesianToPolar, clamp } from "../utils/polarCoordinates";
 export interface RadarInteractionsOptions {
 	onBlipMove: (blipId: string, r: number, theta: number) => void;
 	onZoomChange: (zoom: number) => void;
+	onPanChange: (panX: number, panY: number) => void;
 }
 
 export class RadarInteractions {
@@ -16,10 +17,20 @@ export class RadarInteractions {
 	private blipsGroup: SVGGElement;
 	private options: RadarInteractionsOptions;
 
+	// Blip drag state
 	private draggedBlip: SVGGElement | null = null;
 	private dragStartX = 0;
 	private dragStartY = 0;
 	private currentZoom = 1;
+
+	// Pan state
+	private isPanning = false;
+	private panStartX = 0;
+	private panStartY = 0;
+	private currentPanX = 0;
+	private currentPanY = 0;
+	private panStartOffsetX = 0;
+	private panStartOffsetY = 0;
 
 	// Bound event handlers for proper removal
 	private boundMouseMove: (e: MouseEvent) => void;
@@ -48,13 +59,13 @@ export class RadarInteractions {
 	}
 
 	private setupEventListeners(): void {
-		// Mouse events for drag
-		this.blipsGroup.addEventListener("mousedown", this.onMouseDown.bind(this));
+		// Mouse events for drag and pan - listen on SVG to catch both blips and empty space
+		this.svg.addEventListener("mousedown", this.onSvgMouseDown.bind(this));
 		document.addEventListener("mousemove", this.boundMouseMove);
 		document.addEventListener("mouseup", this.boundMouseUp);
 
-		// Touch events for mobile
-		this.blipsGroup.addEventListener("touchstart", this.onTouchStart.bind(this), {
+		// Touch events for mobile - listen on SVG for both blips and pan
+		this.svg.addEventListener("touchstart", this.onSvgTouchStart.bind(this), {
 			passive: false,
 		});
 		document.addEventListener("touchmove", this.boundTouchMove, { passive: false });
@@ -66,47 +77,66 @@ export class RadarInteractions {
 
 	/**
 	 * Get SVG coordinates from screen coordinates
+	 * Accounts for current pan and zoom transforms
 	 */
 	private getSvgCoordinates(clientX: number, clientY: number): { x: number; y: number } {
 		const rect = this.svg.getBoundingClientRect();
 		const svgWidth = rect.width;
 		const svgHeight = rect.height;
 
-		// Convert to viewBox coordinates
-		const x = ((clientX - rect.left) / svgWidth) * SVG_CONFIG.viewBoxSize;
-		const y = ((clientY - rect.top) / svgHeight) * SVG_CONFIG.viewBoxSize;
+		// Calculate the center of the SVG in screen coordinates
+		const svgCenterX = rect.left + svgWidth / 2;
+		const svgCenterY = rect.top + svgHeight / 2;
 
-		// Convert to center-relative coordinates
-		return {
-			x: x - SVG_CONFIG.center,
-			y: y - SVG_CONFIG.center,
-		};
+		// Get offset from center in screen pixels, then adjust for zoom
+		const offsetX = (clientX - svgCenterX) / this.currentZoom;
+		const offsetY = (clientY - svgCenterY) / this.currentZoom;
+
+		// Convert screen pixel offset to viewBox units
+		// The SVG has a viewBox of viewBoxSize x viewBoxSize, displayed at svgWidth x svgHeight (after zoom)
+		const baseScale = svgWidth / SVG_CONFIG.viewBoxSize;
+		const x = offsetX / baseScale;
+		const y = offsetY / baseScale;
+
+		return { x, y };
 	}
 
 	/**
-	 * Mouse down on blip - start drag
+	 * Mouse down on SVG - start blip drag or pan
 	 */
-	private onMouseDown(e: MouseEvent): void {
+	private onSvgMouseDown(e: MouseEvent): void {
 		const target = e.target as SVGElement;
 		const blipGroup = target.closest(".radar-blip") as SVGGElement;
 
 		if (blipGroup) {
+			// Clicked on a blip - start blip drag
 			e.preventDefault();
 			this.startDrag(blipGroup, e.clientX, e.clientY);
+		} else {
+			// Clicked on empty space - start pan
+			e.preventDefault();
+			this.startPan(e.clientX, e.clientY);
 		}
 	}
 
 	/**
-	 * Touch start on blip - start drag
+	 * Touch start on SVG - start blip drag or pan
 	 */
-	private onTouchStart(e: TouchEvent): void {
+	private onSvgTouchStart(e: TouchEvent): void {
 		const target = e.target as SVGElement;
 		const blipGroup = target.closest(".radar-blip") as SVGGElement;
 		const touch = e.touches[0];
 
-		if (blipGroup && e.touches.length === 1 && touch) {
+		if (e.touches.length !== 1 || !touch) return;
+
+		if (blipGroup) {
+			// Touched a blip - start blip drag
 			e.preventDefault();
 			this.startDrag(blipGroup, touch.clientX, touch.clientY);
+		} else {
+			// Touched empty space - start pan
+			e.preventDefault();
+			this.startPan(touch.clientX, touch.clientY);
 		}
 	}
 
@@ -122,24 +152,45 @@ export class RadarInteractions {
 	}
 
 	/**
-	 * Mouse move - update drag position
+	 * Start panning the radar
 	 */
-	private onMouseMove(e: MouseEvent): void {
-		if (!this.draggedBlip) return;
+	private startPan(clientX: number, clientY: number): void {
+		this.isPanning = true;
+		this.panStartX = clientX;
+		this.panStartY = clientY;
+		this.panStartOffsetX = this.currentPanX;
+		this.panStartOffsetY = this.currentPanY;
 
-		e.preventDefault();
-		this.updateDragPosition(e.clientX, e.clientY);
+		this.svg.classList.add("panning");
 	}
 
 	/**
-	 * Touch move - update drag position
+	 * Mouse move - update drag or pan position
+	 */
+	private onMouseMove(e: MouseEvent): void {
+		if (this.draggedBlip) {
+			e.preventDefault();
+			this.updateDragPosition(e.clientX, e.clientY);
+		} else if (this.isPanning) {
+			e.preventDefault();
+			this.updatePanPosition(e.clientX, e.clientY);
+		}
+	}
+
+	/**
+	 * Touch move - update drag or pan position
 	 */
 	private onTouchMove(e: TouchEvent): void {
 		const touch = e.touches[0];
-		if (!this.draggedBlip || e.touches.length !== 1 || !touch) return;
+		if (e.touches.length !== 1 || !touch) return;
 
-		e.preventDefault();
-		this.updateDragPosition(touch.clientX, touch.clientY);
+		if (this.draggedBlip) {
+			e.preventDefault();
+			this.updateDragPosition(touch.clientX, touch.clientY);
+		} else if (this.isPanning) {
+			e.preventDefault();
+			this.updatePanPosition(touch.clientX, touch.clientY);
+		}
 	}
 
 	/**
@@ -162,37 +213,54 @@ export class RadarInteractions {
 	}
 
 	/**
-	 * Mouse up - end drag
+	 * Update pan position during drag
 	 */
-	private onMouseUp(e: MouseEvent): void {
-		if (!this.draggedBlip) return;
+	private updatePanPosition(clientX: number, clientY: number): void {
+		const deltaX = clientX - this.panStartX;
+		const deltaY = clientY - this.panStartY;
 
-		this.endDrag(e.clientX, e.clientY);
+		this.currentPanX = this.panStartOffsetX + deltaX;
+		this.currentPanY = this.panStartOffsetY + deltaY;
+
+		this.options.onPanChange(this.currentPanX, this.currentPanY);
 	}
 
 	/**
-	 * Touch end - end drag
+	 * Mouse up - end drag or pan
+	 */
+	private onMouseUp(e: MouseEvent): void {
+		if (this.draggedBlip) {
+			this.endDrag(e.clientX, e.clientY);
+		} else if (this.isPanning) {
+			this.endPan();
+		}
+	}
+
+	/**
+	 * Touch end - end drag or pan
 	 */
 	private onTouchEnd(): void {
-		if (!this.draggedBlip) return;
-
-		// Use last known position from touch move
-		const blipId = this.draggedBlip.getAttribute("data-blip-id");
-		if (blipId) {
-			// Get current transform to extract position
-			const transform = this.draggedBlip.getAttribute("transform");
-			const match = transform?.match(/translate\(([^,]+),([^)]+)\)/);
-			if (match && match[1] && match[2]) {
-				const x = parseFloat(match[1]);
-				const y = parseFloat(match[2]);
-				const polar = cartesianToPolar(x, y, SVG_CONFIG.maxRadius);
-				polar.r = clamp(polar.r, 0, 1);
-				this.options.onBlipMove(blipId, polar.r, polar.theta);
+		if (this.draggedBlip) {
+			// Use last known position from touch move
+			const blipId = this.draggedBlip.getAttribute("data-blip-id");
+			if (blipId) {
+				// Get current transform to extract position
+				const transform = this.draggedBlip.getAttribute("transform");
+				const match = transform?.match(/translate\(([^,]+),([^)]+)\)/);
+				if (match && match[1] && match[2]) {
+					const x = parseFloat(match[1]);
+					const y = parseFloat(match[2]);
+					const polar = cartesianToPolar(x, y, SVG_CONFIG.maxRadius);
+					polar.r = clamp(polar.r, 0, 1);
+					this.options.onBlipMove(blipId, polar.r, polar.theta);
+				}
 			}
-		}
 
-		this.draggedBlip.classList.remove("dragging");
-		this.draggedBlip = null;
+			this.draggedBlip.classList.remove("dragging");
+			this.draggedBlip = null;
+		} else if (this.isPanning) {
+			this.endPan();
+		}
 	}
 
 	/**
@@ -214,12 +282,50 @@ export class RadarInteractions {
 	}
 
 	/**
-	 * Wheel event for zoom
+	 * End panning
+	 */
+	private endPan(): void {
+		this.isPanning = false;
+		this.svg.classList.remove("panning");
+	}
+
+	/**
+	 * Wheel event - handles both zoom and pan depending on input device
+	 * - Trackpad pinch (ctrlKey) or mouse wheel: zoom
+	 * - Trackpad two-finger scroll: pan
 	 */
 	private onWheel(e: WheelEvent): void {
 		e.preventDefault();
 
-		const delta = e.deltaY > 0 ? -SVG_CONFIG.zoomStep : SVG_CONFIG.zoomStep;
+		// Pinch gesture on trackpad sets ctrlKey = true
+		// Also handles Ctrl+scroll on mouse for zooming
+		if (e.ctrlKey) {
+			this.handleZoom(e.deltaY);
+			return;
+		}
+
+		// Detect input device by deltaMode:
+		// - deltaMode 0 (DOM_DELTA_PIXEL): typically trackpad
+		// - deltaMode 1 (DOM_DELTA_LINE): typically mouse wheel
+		// - deltaMode 2 (DOM_DELTA_PAGE): rare, treat as mouse
+		const isTrackpad = e.deltaMode === 0;
+
+		if (isTrackpad) {
+			// Trackpad two-finger scroll = pan
+			this.currentPanX -= e.deltaX;
+			this.currentPanY -= e.deltaY;
+			this.options.onPanChange(this.currentPanX, this.currentPanY);
+		} else {
+			// Mouse wheel = zoom
+			this.handleZoom(e.deltaY);
+		}
+	}
+
+	/**
+	 * Handle zoom from wheel delta
+	 */
+	private handleZoom(deltaY: number): void {
+		const delta = deltaY > 0 ? -SVG_CONFIG.zoomStep : SVG_CONFIG.zoomStep;
 		const newZoom = clamp(
 			this.currentZoom + delta,
 			SVG_CONFIG.minZoom,
@@ -237,6 +343,14 @@ export class RadarInteractions {
 	 */
 	setZoom(zoom: number): void {
 		this.currentZoom = zoom;
+	}
+
+	/**
+	 * Set current pan offset (for syncing with external state)
+	 */
+	setPan(panX: number, panY: number): void {
+		this.currentPanX = panX;
+		this.currentPanY = panY;
 	}
 
 	/**

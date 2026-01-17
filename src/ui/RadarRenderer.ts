@@ -28,6 +28,11 @@ export class RadarRenderer {
 	private radarData: RadarData;
 	private options: RadarRendererOptions;
 
+	// Transform state
+	private currentPanX = 0;
+	private currentPanY = 0;
+	private currentZoom = 1;
+
 	constructor(
 		private container: HTMLElement,
 		radarData: RadarData,
@@ -241,15 +246,44 @@ export class RadarRenderer {
 	}
 
 	/**
+	 * Apply combined transform (pan + zoom)
+	 */
+	setTransform(zoom: number, panX: number, panY: number): void {
+		this.currentZoom = zoom;
+		this.currentPanX = panX;
+		this.currentPanY = panY;
+		this.svg.setCssProps({
+			transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
+			"transform-origin": "center center",
+		});
+	}
+
+	/**
 	 * Set zoom level
 	 */
 	setZoom(zoom: number): void {
-		const scale = zoom;
-		//const offset = SVG_CONFIG.center * (1 - scale);
-		this.svg.setCssProps({
-			transform: `scale(${scale})`,
-			"transform-origin": "center center",
-		});
+		this.setTransform(zoom, this.currentPanX, this.currentPanY);
+	}
+
+	/**
+	 * Set pan offset
+	 */
+	setPan(panX: number, panY: number): void {
+		this.setTransform(this.currentZoom, panX, panY);
+	}
+
+	/**
+	 * Get current pan offset
+	 */
+	getPan(): { panX: number; panY: number } {
+		return { panX: this.currentPanX, panY: this.currentPanY };
+	}
+
+	/**
+	 * Get current zoom level
+	 */
+	getZoom(): number {
+		return this.currentZoom;
 	}
 
 	/**
