@@ -213,7 +213,7 @@ export class RadarRenderer {
 	updateBlipPosition(blipId: string, r: number, theta: number): void {
 		const blipGroup = this.blipsGroup.querySelector(
 			`[data-blip-id="${blipId}"]`
-		) as SVGGElement | null;
+		) as SVGGElement;
 
 		if (blipGroup) {
 			const pos = polarToCartesian(r, theta, SVG_CONFIG.maxRadius);
@@ -245,7 +245,7 @@ export class RadarRenderer {
 	 */
 	setZoom(zoom: number): void {
 		const scale = zoom;
-		const offset = SVG_CONFIG.center * (1 - scale);
+		//const offset = SVG_CONFIG.center * (1 - scale);
 		this.svg.style.transform = `scale(${scale})`;
 		this.svg.style.transformOrigin = "center center";
 	}

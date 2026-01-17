@@ -27,8 +27,6 @@ export class RadarSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		containerEl.createEl("h2", { text: "Radar settings" });
-
 		new Setting(containerEl)
 			.setName("Default priority levels")
 			.setDesc("Number of priority rings for new radars (1-7)")

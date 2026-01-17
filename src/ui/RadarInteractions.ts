@@ -88,7 +88,7 @@ export class RadarInteractions {
 	 */
 	private onMouseDown(e: MouseEvent): void {
 		const target = e.target as SVGElement;
-		const blipGroup = target.closest(".radar-blip") as SVGGElement | null;
+		const blipGroup = target.closest(".radar-blip") as SVGGElement;
 
 		if (blipGroup) {
 			e.preventDefault();
@@ -101,7 +101,7 @@ export class RadarInteractions {
 	 */
 	private onTouchStart(e: TouchEvent): void {
 		const target = e.target as SVGElement;
-		const blipGroup = target.closest(".radar-blip") as SVGGElement | null;
+		const blipGroup = target.closest(".radar-blip") as SVGGElement;
 		const touch = e.touches[0];
 
 		if (blipGroup && e.touches.length === 1 && touch) {

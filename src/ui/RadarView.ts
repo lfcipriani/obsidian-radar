@@ -3,7 +3,7 @@
  * TextFileView subclass for displaying and interacting with a radar
  */
 
-import { TextFileView, WorkspaceLeaf, TFile, Menu } from "obsidian";
+import { TextFileView, WorkspaceLeaf, Menu } from "obsidian";
 import type RadarPlugin from "../main";
 import type { RadarData, Blip } from "../types";
 import { VIEW_TYPE_RADAR, SVG_CONFIG } from "../constants";

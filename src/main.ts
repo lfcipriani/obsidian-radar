@@ -39,13 +39,10 @@ export default class RadarPlugin extends Plugin {
 		});
 	}
 
-	onunload(): void {
-		// Clean up views
-		this.app.workspace.detachLeavesOfType(VIEW_TYPE_RADAR);
-	}
+	onunload() {}
 
 	async loadSettings(): Promise<void> {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<RadarPluginSettings>);
 	}
 
 	async saveSettings(): Promise<void> {

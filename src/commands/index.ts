@@ -10,7 +10,7 @@ export function registerCommands(plugin: RadarPlugin): void {
 	// Create new radar
 	plugin.addCommand({
 		id: "radar:create",
-		name: "Create new radar",
+		name: "Create new",
 		callback: () => createRadarCommand(plugin),
 	});
 }
