@@ -17,7 +17,7 @@ import {
 
 export interface RadarRendererOptions {
 	blipRadius: number;
-	onBlipClick?: (blipId: string) => void;
+	onBlipClick?: (blipId: string, event: MouseEvent) => void;
 }
 
 export class RadarRenderer {
@@ -192,7 +192,7 @@ export class RadarRenderer {
 		if (this.options.onBlipClick) {
 			blipGroup.addEventListener("click", (e) => {
 				e.stopPropagation();
-				this.options.onBlipClick?.(blip.id);
+				this.options.onBlipClick?.(blip.id, e);
 			});
 		}
 
@@ -246,8 +246,10 @@ export class RadarRenderer {
 	setZoom(zoom: number): void {
 		const scale = zoom;
 		//const offset = SVG_CONFIG.center * (1 - scale);
-		this.svg.style.transform = `scale(${scale})`;
-		this.svg.style.transformOrigin = "center center";
+		this.svg.setCssProps({
+			transform: `scale(${scale})`,
+			"transform-origin": "center center",
+		});
 	}
 
 	/**

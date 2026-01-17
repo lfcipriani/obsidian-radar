@@ -130,7 +130,7 @@ export class RadarView extends TextFileView {
 		// Create renderer
 		this.renderer = new RadarRenderer(this.svgContainer, this.radarData, {
 			blipRadius: this.plugin.settings.blipRadius,
-			onBlipClick: (blipId) => this.onBlipClick(blipId),
+			onBlipClick: (blipId, event) => this.onBlipClick(blipId, event),
 		});
 
 		// Create interactions handler
@@ -153,7 +153,7 @@ export class RadarView extends TextFileView {
 	/**
 	 * Handle blip click
 	 */
-	private onBlipClick(blipId: string): void {
+	private onBlipClick(blipId: string, event: MouseEvent): void {
 		const blip = this.radarData?.blips.find((b) => b.id === blipId);
 		if (!blip) return;
 
@@ -167,7 +167,7 @@ export class RadarView extends TextFileView {
 					.setIcon("file")
 					.onClick(() => {
 						if (blip.notePath) {
-							this.app.workspace.openLinkText(blip.notePath, "");
+							void this.app.workspace.openLinkText(blip.notePath, "");
 						}
 					})
 			);
@@ -180,7 +180,7 @@ export class RadarView extends TextFileView {
 				.onClick(() => this.removeBlip(blipId))
 		);
 
-		menu.showAtMouseEvent(window.event as MouseEvent);
+		menu.showAtMouseEvent(event);
 	}
 
 	/**
