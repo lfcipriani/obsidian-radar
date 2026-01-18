@@ -8,7 +8,6 @@ import type { RadarData, Blip } from "../types";
 import {
 	DEFAULT_PRIORITIES,
 	DEFAULT_CATEGORIES,
-	DEFAULT_VIEW_STATE,
 	RADAR_FILE_EXTENSION,
 } from "../constants";
 import { generateId } from "../utils/idGenerator";
@@ -19,17 +18,11 @@ export class RadarStore {
 	/**
 	 * Create a new radar with default configuration
 	 */
-	createNewRadarData(name: string): RadarData {
-		const now = Date.now();
+	createNewRadarData(): RadarData {
 		return {
-			id: generateId(),
-			name,
 			priorityLevels: [...DEFAULT_PRIORITIES],
 			categories: [...DEFAULT_CATEGORIES],
 			blips: [],
-			viewState: { ...DEFAULT_VIEW_STATE },
-			createdAt: now,
-			updatedAt: now,
 		};
 	}
 
@@ -37,7 +30,7 @@ export class RadarStore {
 	 * Create a new radar file in the vault
 	 */
 	async createRadar(name: string, folder?: TFolder): Promise<TFile> {
-		const radarData = this.createNewRadarData(name);
+		const radarData = this.createNewRadarData();
 		const fileName = `${name}.${RADAR_FILE_EXTENSION}`;
 		const basePath = folder ? folder.path : "";
 		const path = basePath ? `${basePath}/${fileName}` : fileName;
@@ -60,7 +53,6 @@ export class RadarStore {
 	 * Save radar data to a file
 	 */
 	async saveRadar(file: TFile, data: RadarData): Promise<void> {
-		data.updatedAt = Date.now();
 		const content = JSON.stringify(data, null, 2);
 		await this.app.vault.modify(file, content);
 	}
@@ -68,16 +60,12 @@ export class RadarStore {
 	/**
 	 * Add a blip to the radar
 	 */
-	addBlip(radar: RadarData, blip: Omit<Blip, "id" | "createdAt" | "updatedAt">): Blip {
-		const now = Date.now();
+	addBlip(radar: RadarData, blip: Omit<Blip, "id">): Blip {
 		const newBlip: Blip = {
 			...blip,
 			id: generateId(),
-			createdAt: now,
-			updatedAt: now,
 		};
 		radar.blips.push(newBlip);
-		radar.updatedAt = now;
 		return newBlip;
 	}
 
@@ -89,8 +77,6 @@ export class RadarStore {
 		if (blip) {
 			blip.r = r;
 			blip.theta = theta;
-			blip.updatedAt = Date.now();
-			radar.updatedAt = Date.now();
 		}
 	}
 
@@ -100,8 +86,7 @@ export class RadarStore {
 	updateBlip(radar: RadarData, blipId: string, updates: Partial<Blip>): void {
 		const blip = radar.blips.find((b) => b.id === blipId);
 		if (blip) {
-			Object.assign(blip, updates, { updatedAt: Date.now() });
-			radar.updatedAt = Date.now();
+			Object.assign(blip, updates);
 		}
 	}
 
@@ -112,7 +97,6 @@ export class RadarStore {
 		const index = radar.blips.findIndex((b) => b.id === blipId);
 		if (index !== -1) {
 			radar.blips.splice(index, 1);
-			radar.updatedAt = Date.now();
 		}
 	}
 

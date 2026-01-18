@@ -5,8 +5,8 @@
 
 import { TextFileView, WorkspaceLeaf, Menu } from "obsidian";
 import type RadarPlugin from "../main";
-import type { RadarData, Blip } from "../types";
-import { VIEW_TYPE_RADAR, SVG_CONFIG } from "../constants";
+import type { RadarData, Blip, ViewState } from "../types";
+import { VIEW_TYPE_RADAR, SVG_CONFIG, DEFAULT_VIEW_STATE } from "../constants";
 import { RadarRenderer } from "./RadarRenderer";
 import { RadarToolbar } from "./RadarToolbar";
 import { RadarInteractions } from "./RadarInteractions";
@@ -16,6 +16,7 @@ import { AddTextModal } from "./AddTextModal";
 export class RadarView extends TextFileView {
 	private plugin: RadarPlugin;
 	private radarData: RadarData | null = null;
+	private viewState: ViewState = { ...DEFAULT_VIEW_STATE };
 	private renderer: RadarRenderer | null = null;
 	private toolbar: RadarToolbar | null = null;
 	private interactions: RadarInteractions | null = null;
@@ -144,13 +145,6 @@ export class RadarView extends TextFileView {
 			}
 		);
 
-		// Apply saved view state (zoom and pan)
-		const { zoom, panX, panY } = this.radarData.viewState;
-		if (zoom !== 1 || panX !== 0 || panY !== 0) {
-			this.renderer.setTransform(zoom, panX, panY);
-			this.interactions.setZoom(zoom);
-			this.interactions.setPan(panX, panY);
-		}
 	}
 
 	/**
@@ -200,23 +194,17 @@ export class RadarView extends TextFileView {
 	 * Handle zoom change
 	 */
 	private onZoomChange(zoom: number): void {
-		if (!this.radarData) return;
-
-		this.radarData.viewState.zoom = zoom;
+		this.viewState.zoom = zoom;
 		this.renderer?.setZoom(zoom);
-		this.requestSave();
 	}
 
 	/**
 	 * Handle pan change
 	 */
 	private onPanChange(panX: number, panY: number): void {
-		if (!this.radarData) return;
-
-		this.radarData.viewState.panX = panX;
-		this.radarData.viewState.panY = panY;
+		this.viewState.panX = panX;
+		this.viewState.panY = panY;
 		this.renderer?.setPan(panX, panY);
-		this.requestSave();
 	}
 
 	/**
@@ -257,7 +245,7 @@ export class RadarView extends TextFileView {
 	/**
 	 * Add a blip to the radar
 	 */
-	private addBlip(blipData: Omit<Blip, "id" | "createdAt" | "updatedAt">): void {
+	private addBlip(blipData: Omit<Blip, "id">): void {
 		if (!this.radarData) return;
 
 		const blip = this.plugin.radarStore.addBlip(this.radarData, blipData);
@@ -280,18 +268,16 @@ export class RadarView extends TextFileView {
 	 * Zoom controls
 	 */
 	private zoomIn(): void {
-		if (!this.radarData) return;
 		const newZoom = Math.min(
-			this.radarData.viewState.zoom + SVG_CONFIG.zoomStep,
+			this.viewState.zoom + SVG_CONFIG.zoomStep,
 			SVG_CONFIG.maxZoom
 		);
 		this.onZoomChange(newZoom);
 	}
 
 	private zoomOut(): void {
-		if (!this.radarData) return;
 		const newZoom = Math.max(
-			this.radarData.viewState.zoom - SVG_CONFIG.zoomStep,
+			this.viewState.zoom - SVG_CONFIG.zoomStep,
 			SVG_CONFIG.minZoom
 		);
 		this.onZoomChange(newZoom);

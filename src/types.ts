@@ -22,10 +22,6 @@ export interface Blip {
 	theta: number;
 	/** Optional custom color */
 	color?: string;
-	/** Creation timestamp */
-	createdAt: number;
-	/** Last update timestamp */
-	updatedAt: number;
 }
 
 /** A priority level defines a ring on the radar */
@@ -62,22 +58,12 @@ export interface ViewState {
 
 /** Complete radar data structure stored in JSON files */
 export interface RadarData {
-	/** Unique identifier */
-	id: string;
-	/** Display name */
-	name: string;
 	/** Priority levels (1-7 rings) */
 	priorityLevels: PriorityLevel[];
 	/** Categories (0-8 segments) */
 	categories: Category[];
 	/** Blips on the radar */
 	blips: Blip[];
-	/** Current view state */
-	viewState: ViewState;
-	/** Creation timestamp */
-	createdAt: number;
-	/** Last update timestamp */
-	updatedAt: number;
 }
 
 /** Plugin settings stored via Obsidian's data API */
