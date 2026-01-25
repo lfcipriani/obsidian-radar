@@ -8,9 +8,13 @@ import { cartesianToPolar, clamp } from "../utils/polarCoordinates";
 
 export interface RadarInteractionsOptions {
 	onBlipMove: (blipId: string, r: number, theta: number) => void;
+	onBlipClick: (blipId: string, event: MouseEvent | TouchEvent) => void;
 	onZoomChange: (zoom: number) => void;
 	onPanChange: (panX: number, panY: number) => void;
 }
+
+// Minimum distance in pixels to consider it a drag vs click
+const DRAG_THRESHOLD = 5;
 
 export class RadarInteractions {
 	private svg: SVGSVGElement;
@@ -21,6 +25,7 @@ export class RadarInteractions {
 	private draggedBlip: SVGGElement | null = null;
 	private dragStartX = 0;
 	private dragStartY = 0;
+	private hasDragged = false;
 	private currentZoom = 1;
 
 	// Pan state
@@ -52,7 +57,7 @@ export class RadarInteractions {
 		this.boundMouseMove = this.onMouseMove.bind(this);
 		this.boundMouseUp = this.onMouseUp.bind(this);
 		this.boundTouchMove = this.onTouchMove.bind(this);
-		this.boundTouchEnd = this.onTouchEnd.bind(this);
+		this.boundTouchEnd = (e: TouchEvent) => this.onTouchEnd(e);
 		this.boundWheel = this.onWheel.bind(this);
 
 		this.setupEventListeners();
@@ -147,6 +152,7 @@ export class RadarInteractions {
 		this.draggedBlip = blipGroup;
 		this.dragStartX = clientX;
 		this.dragStartY = clientY;
+		this.hasDragged = false;
 
 		blipGroup.classList.add("dragging");
 	}
@@ -199,6 +205,14 @@ export class RadarInteractions {
 	private updateDragPosition(clientX: number, clientY: number): void {
 		if (!this.draggedBlip) return;
 
+		// Check if we've moved beyond the drag threshold
+		const deltaX = clientX - this.dragStartX;
+		const deltaY = clientY - this.dragStartY;
+		const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+		if (distance > DRAG_THRESHOLD) {
+			this.hasDragged = true;
+		}
+
 		const coords = this.getSvgCoordinates(clientX, clientY);
 		const polar = cartesianToPolar(coords.x, coords.y, SVG_CONFIG.maxRadius);
 
@@ -230,7 +244,7 @@ export class RadarInteractions {
 	 */
 	private onMouseUp(e: MouseEvent): void {
 		if (this.draggedBlip) {
-			this.endDrag(e.clientX, e.clientY);
+			this.endDrag(e.clientX, e.clientY, e);
 		} else if (this.isPanning) {
 			this.endPan();
 		}
@@ -239,20 +253,24 @@ export class RadarInteractions {
 	/**
 	 * Touch end - end drag or pan
 	 */
-	private onTouchEnd(): void {
+	private onTouchEnd(e: TouchEvent): void {
 		if (this.draggedBlip) {
-			// Use last known position from touch move
 			const blipId = this.draggedBlip.getAttribute("data-blip-id");
 			if (blipId) {
-				// Get current transform to extract position
-				const transform = this.draggedBlip.getAttribute("transform");
-				const match = transform?.match(/translate\(([^,]+),([^)]+)\)/);
-				if (match && match[1] && match[2]) {
-					const x = parseFloat(match[1]);
-					const y = parseFloat(match[2]);
-					const polar = cartesianToPolar(x, y, SVG_CONFIG.maxRadius);
-					polar.r = clamp(polar.r, 0, 1);
-					this.options.onBlipMove(blipId, polar.r, polar.theta);
+				if (this.hasDragged) {
+					// It was a drag - use last known position from touch move
+					const transform = this.draggedBlip.getAttribute("transform");
+					const match = transform?.match(/translate\(([^,]+),([^)]+)\)/);
+					if (match && match[1] && match[2]) {
+						const x = parseFloat(match[1]);
+						const y = parseFloat(match[2]);
+						const polar = cartesianToPolar(x, y, SVG_CONFIG.maxRadius);
+						polar.r = clamp(polar.r, 0, 1);
+						this.options.onBlipMove(blipId, polar.r, polar.theta);
+					}
+				} else {
+					// It was a tap - trigger click callback
+					this.options.onBlipClick(blipId, e);
 				}
 			}
 
@@ -264,17 +282,23 @@ export class RadarInteractions {
 	}
 
 	/**
-	 * End drag and save position
+	 * End drag and save position, or trigger click if no drag occurred
 	 */
-	private endDrag(clientX: number, clientY: number): void {
+	private endDrag(clientX: number, clientY: number, event: MouseEvent): void {
 		if (!this.draggedBlip) return;
 
 		const blipId = this.draggedBlip.getAttribute("data-blip-id");
 		if (blipId) {
-			const coords = this.getSvgCoordinates(clientX, clientY);
-			const polar = cartesianToPolar(coords.x, coords.y, SVG_CONFIG.maxRadius);
-			polar.r = clamp(polar.r, 0, 1);
-			this.options.onBlipMove(blipId, polar.r, polar.theta);
+			if (this.hasDragged) {
+				// It was a drag - update position
+				const coords = this.getSvgCoordinates(clientX, clientY);
+				const polar = cartesianToPolar(coords.x, coords.y, SVG_CONFIG.maxRadius);
+				polar.r = clamp(polar.r, 0, 1);
+				this.options.onBlipMove(blipId, polar.r, polar.theta);
+			} else {
+				// It was a click - trigger click callback
+				this.options.onBlipClick(blipId, event);
+			}
 		}
 
 		this.draggedBlip.classList.remove("dragging");

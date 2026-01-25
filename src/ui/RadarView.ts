@@ -131,7 +131,6 @@ export class RadarView extends TextFileView {
 		// Create renderer
 		this.renderer = new RadarRenderer(this.svgContainer, this.radarData, {
 			blipRadius: this.plugin.settings.blipRadius,
-			onBlipClick: (blipId, event) => this.onBlipClick(blipId, event),
 		});
 
 		// Create interactions handler
@@ -140,6 +139,7 @@ export class RadarView extends TextFileView {
 			this.renderer.getBlipsGroup(),
 			{
 				onBlipMove: (blipId, r, theta) => this.onBlipMove(blipId, r, theta),
+				onBlipClick: (blipId, event) => this.onBlipClick(blipId, event),
 				onZoomChange: (zoom) => this.onZoomChange(zoom),
 				onPanChange: (panX, panY) => this.onPanChange(panX, panY),
 			}
@@ -148,9 +148,9 @@ export class RadarView extends TextFileView {
 	}
 
 	/**
-	 * Handle blip click
+	 * Handle blip click (not drag)
 	 */
-	private onBlipClick(blipId: string, event: MouseEvent): void {
+	private onBlipClick(blipId: string, event: MouseEvent | TouchEvent): void {
 		const blip = this.radarData?.blips.find((b) => b.id === blipId);
 		if (!blip) return;
 
@@ -177,7 +177,16 @@ export class RadarView extends TextFileView {
 				.onClick(() => this.removeBlip(blipId))
 		);
 
-		menu.showAtMouseEvent(event);
+		// Handle both mouse and touch events for menu positioning
+		if (event instanceof MouseEvent) {
+			menu.showAtMouseEvent(event);
+		} else {
+			// For touch events, use the touch position
+			const touch = event.changedTouches[0];
+			if (touch) {
+				menu.showAtPosition({ x: touch.clientX, y: touch.clientY });
+			}
+		}
 	}
 
 	/**

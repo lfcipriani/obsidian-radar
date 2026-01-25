@@ -17,7 +17,6 @@ import {
 
 export interface RadarRendererOptions {
 	blipRadius: number;
-	onBlipClick?: (blipId: string, event: MouseEvent) => void;
 }
 
 export class RadarRenderer {
@@ -192,14 +191,6 @@ export class RadarRenderer {
 
 		blipGroup.appendChild(circle);
 		blipGroup.appendChild(title);
-
-		// Add click handler
-		if (this.options.onBlipClick) {
-			blipGroup.addEventListener("click", (e) => {
-				e.stopPropagation();
-				this.options.onBlipClick?.(blip.id, e);
-			});
-		}
 
 		this.blipsGroup.appendChild(blipGroup);
 	}
