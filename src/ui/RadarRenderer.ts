@@ -83,7 +83,7 @@ export class RadarRenderer {
 			// Add priority label
 			if (priority.name) {
 				const labelX = center + 5;
-				const labelY = center - radius + 15;
+				const labelY = center - radius - 5;
 				const label = createText(labelX, labelY, priority.name, "radar-priority-label");
 				this.backgroundGroup.appendChild(label);
 			}
@@ -97,6 +97,7 @@ export class RadarRenderer {
 		this.categoryGroup.innerHTML = "";
 
 		const { center, maxRadius } = SVG_CONFIG;
+		const categoryDividerExtension = 20;
 		const categories = this.radarData.categories;
 
 		if (categories.length === 0) {
@@ -104,7 +105,7 @@ export class RadarRenderer {
 		}
 
 		for (const category of categories) {
-			const endPoint = polarToCartesian(1, category.startAngle, maxRadius);
+			const endPoint = polarToCartesian(1, category.startAngle, maxRadius + categoryDividerExtension);
 
 			const line = createLine(
 				center,
