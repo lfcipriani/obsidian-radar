@@ -135,6 +135,7 @@ export class RadarView extends TextFileView {
 
 		// Create interactions handler
 		this.interactions = new RadarInteractions(
+			this.svgContainer,
 			this.renderer.getSvgElement(),
 			this.renderer.getBlipsGroup(),
 			{

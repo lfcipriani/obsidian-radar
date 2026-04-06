@@ -41,7 +41,7 @@ export function polarToCartesian(
  * @param x - X coordinate relative to center
  * @param y - Y coordinate relative to center (SVG coordinates, positive downward)
  * @param maxRadius - Maximum radius in pixels
- * @returns Polar coordinates (r normalized 0-1, theta in degrees)
+ * @returns Polar coordinates (r may exceed 1 outside the radar rings, theta in degrees)
  */
 export function cartesianToPolar(
 	x: number,
@@ -55,7 +55,7 @@ export function cartesianToPolar(
 	if (theta < 0) {
 		theta += 360;
 	}
-	return { r: Math.min(r, 1), theta };
+	return { r, theta };
 }
 
 /**

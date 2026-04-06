@@ -57,17 +57,21 @@
 	position: relative;
 	overflow: hidden;
 	padding: 20px;
+	cursor: grab;
 }
 
 .radar-svg {
 	width: 100%;
 	height: 100%;
 	transition: transform 0.2s ease;
-	cursor: grab;
 }
 
-.radar-svg.panning {
+.radar-svg-container.panning {
 	cursor: grabbing;
+}
+
+.radar-svg-container.panning .radar-svg,
+.radar-svg.panning {
 	transition: none; /* Disable transition during pan for responsiveness */
 }
 

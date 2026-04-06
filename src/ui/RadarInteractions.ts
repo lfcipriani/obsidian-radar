@@ -17,6 +17,7 @@ export interface RadarInteractionsOptions {
 const DRAG_THRESHOLD = 5;
 
 export class RadarInteractions {
+	private eventSurface: HTMLElement;
 	private svg: SVGSVGElement;
 	private blipsGroup: SVGGElement;
 	private options: RadarInteractionsOptions;
@@ -43,12 +44,17 @@ export class RadarInteractions {
 	private boundTouchMove: (e: TouchEvent) => void;
 	private boundTouchEnd: (e: TouchEvent) => void;
 	private boundWheel: (e: WheelEvent) => void;
+	private boundMouseDown: (e: MouseEvent) => void;
+	private boundTouchStart: (e: TouchEvent) => void;
+	private boundContextMenu: (e: MouseEvent) => void;
 
 	constructor(
+		eventSurface: HTMLElement,
 		svg: SVGSVGElement,
 		blipsGroup: SVGGElement,
 		options: RadarInteractionsOptions
 	) {
+		this.eventSurface = eventSurface;
 		this.svg = svg;
 		this.blipsGroup = blipsGroup;
 		this.options = options;
@@ -59,25 +65,31 @@ export class RadarInteractions {
 		this.boundTouchMove = this.onTouchMove.bind(this);
 		this.boundTouchEnd = (e: TouchEvent) => this.onTouchEnd(e);
 		this.boundWheel = this.onWheel.bind(this);
+		this.boundMouseDown = this.onSvgMouseDown.bind(this);
+		this.boundTouchStart = this.onSvgTouchStart.bind(this);
+		this.boundContextMenu = this.onContextMenu.bind(this);
 
 		this.setupEventListeners();
 	}
 
 	private setupEventListeners(): void {
-		// Mouse events for drag and pan - listen on SVG to catch both blips and empty space
-		this.svg.addEventListener("mousedown", this.onSvgMouseDown.bind(this));
+		// Use the full container as the interaction surface so padding around the SVG still pans/zooms.
+		this.eventSurface.addEventListener("mousedown", this.boundMouseDown);
 		document.addEventListener("mousemove", this.boundMouseMove);
 		document.addEventListener("mouseup", this.boundMouseUp);
 
-		// Touch events for mobile - listen on SVG for both blips and pan
-		this.svg.addEventListener("touchstart", this.onSvgTouchStart.bind(this), {
+		this.eventSurface.addEventListener("touchstart", this.boundTouchStart, {
 			passive: false,
 		});
 		document.addEventListener("touchmove", this.boundTouchMove, { passive: false });
 		document.addEventListener("touchend", this.boundTouchEnd);
 
-		// Wheel event for zoom
-		this.svg.addEventListener("wheel", this.boundWheel, { passive: false });
+		// Capture wheel on the document so parent Obsidian panes can't steal it first.
+		document.addEventListener("wheel", this.boundWheel, {
+			passive: false,
+			capture: true,
+		});
+		this.eventSurface.addEventListener("contextmenu", this.boundContextMenu);
 	}
 
 	/**
@@ -89,19 +101,21 @@ export class RadarInteractions {
 		const svgWidth = rect.width;
 		const svgHeight = rect.height;
 
-		// Calculate the center of the SVG in screen coordinates
-		const svgCenterX = rect.left + svgWidth / 2;
-		const svgCenterY = rect.top + svgHeight / 2;
+		// preserveAspectRatio="xMidYMid meet" renders the square viewBox into the
+		// largest centered square that fits in the SVG element. If the host area is
+		// not square, there is letterboxing that must be removed from pointer math.
+		const renderedSize = Math.min(svgWidth, svgHeight);
+		const renderedLeft = rect.left + (svgWidth - renderedSize) / 2;
+		const renderedTop = rect.top + (svgHeight - renderedSize) / 2;
 
-		// Get offset from center in screen pixels, then adjust for zoom
-		const offsetX = (clientX - svgCenterX) / this.currentZoom;
-		const offsetY = (clientY - svgCenterY) / this.currentZoom;
-
-		// Convert screen pixel offset to viewBox units
-		// The SVG has a viewBox of viewBoxSize x viewBoxSize, displayed at svgWidth x svgHeight (after zoom)
-		const baseScale = svgWidth / SVG_CONFIG.viewBoxSize;
-		const x = offsetX / baseScale;
-		const y = offsetY / baseScale;
+		// Convert screen coordinates into viewBox coordinates, then shift to the
+		// radar-centered coordinate system used by blip transforms.
+		const viewBoxX =
+			((clientX - renderedLeft) / renderedSize) * SVG_CONFIG.viewBoxSize;
+		const viewBoxY =
+			((clientY - renderedTop) / renderedSize) * SVG_CONFIG.viewBoxSize;
+		const x = viewBoxX - SVG_CONFIG.center;
+		const y = viewBoxY - SVG_CONFIG.center;
 
 		return { x, y };
 	}
@@ -110,15 +124,19 @@ export class RadarInteractions {
 	 * Mouse down on SVG - start blip drag or pan
 	 */
 	private onSvgMouseDown(e: MouseEvent): void {
+		if (e.button !== 0 && e.button !== 2) {
+			return;
+		}
+
 		const target = e.target as SVGElement;
 		const blipGroup = target.closest(".radar-blip") as SVGGElement;
 
-		if (blipGroup) {
+		if (blipGroup && e.button === 0) {
 			// Clicked on a blip - start blip drag
 			e.preventDefault();
 			this.startDrag(blipGroup, e.clientX, e.clientY);
 		} else {
-			// Clicked on empty space - start pan
+			// Left-drag on empty space or right-drag anywhere pans the radar.
 			e.preventDefault();
 			this.startPan(e.clientX, e.clientY);
 		}
@@ -167,7 +185,7 @@ export class RadarInteractions {
 		this.panStartOffsetX = this.currentPanX;
 		this.panStartOffsetY = this.currentPanY;
 
-		this.svg.classList.add("panning");
+		this.eventSurface.classList.add("panning");
 	}
 
 	/**
@@ -214,15 +232,13 @@ export class RadarInteractions {
 		}
 
 		const coords = this.getSvgCoordinates(clientX, clientY);
-		const polar = cartesianToPolar(coords.x, coords.y, SVG_CONFIG.maxRadius);
-
-		// Clamp radius to valid range
-		polar.r = clamp(polar.r, 0, 1);
+		const clampedX = clamp(coords.x, -SVG_CONFIG.center, SVG_CONFIG.center);
+		const clampedY = clamp(coords.y, -SVG_CONFIG.center, SVG_CONFIG.center);
 
 		// Update visual position
 		this.draggedBlip.setAttribute(
 			"transform",
-			`translate(${coords.x},${coords.y})`
+			`translate(${clampedX},${clampedY})`
 		);
 	}
 
@@ -265,7 +281,6 @@ export class RadarInteractions {
 						const x = parseFloat(match[1]);
 						const y = parseFloat(match[2]);
 						const polar = cartesianToPolar(x, y, SVG_CONFIG.maxRadius);
-						polar.r = clamp(polar.r, 0, 1);
 						this.options.onBlipMove(blipId, polar.r, polar.theta);
 					}
 				} else {
@@ -292,8 +307,9 @@ export class RadarInteractions {
 			if (this.hasDragged) {
 				// It was a drag - update position
 				const coords = this.getSvgCoordinates(clientX, clientY);
-				const polar = cartesianToPolar(coords.x, coords.y, SVG_CONFIG.maxRadius);
-				polar.r = clamp(polar.r, 0, 1);
+				const clampedX = clamp(coords.x, -SVG_CONFIG.center, SVG_CONFIG.center);
+				const clampedY = clamp(coords.y, -SVG_CONFIG.center, SVG_CONFIG.center);
+				const polar = cartesianToPolar(clampedX, clampedY, SVG_CONFIG.maxRadius);
 				this.options.onBlipMove(blipId, polar.r, polar.theta);
 			} else {
 				// It was a click - trigger click callback
@@ -310,7 +326,14 @@ export class RadarInteractions {
 	 */
 	private endPan(): void {
 		this.isPanning = false;
-		this.svg.classList.remove("panning");
+		this.eventSurface.classList.remove("panning");
+	}
+
+	/**
+	 * Prevent the browser context menu from interrupting right-drag panning.
+	 */
+	private onContextMenu(e: MouseEvent): void {
+		e.preventDefault();
 	}
 
 	/**
@@ -319,30 +342,15 @@ export class RadarInteractions {
 	 * - Trackpad two-finger scroll: pan
 	 */
 	private onWheel(e: WheelEvent): void {
-		e.preventDefault();
-
-		// Pinch gesture on trackpad sets ctrlKey = true
-		// Also handles Ctrl+scroll on mouse for zooming
-		if (e.ctrlKey) {
-			this.handleZoom(e.deltaY);
+		const target = e.target;
+		if (!(target instanceof Node) || !this.eventSurface.contains(target)) {
 			return;
 		}
 
-		// Detect input device by deltaMode:
-		// - deltaMode 0 (DOM_DELTA_PIXEL): typically trackpad
-		// - deltaMode 1 (DOM_DELTA_LINE): typically mouse wheel
-		// - deltaMode 2 (DOM_DELTA_PAGE): rare, treat as mouse
-		const isTrackpad = e.deltaMode === 0;
+		e.preventDefault();
+		e.stopPropagation();
 
-		if (isTrackpad) {
-			// Trackpad two-finger scroll = pan
-			this.currentPanX -= e.deltaX;
-			this.currentPanY -= e.deltaY;
-			this.options.onPanChange(this.currentPanX, this.currentPanY);
-		} else {
-			// Mouse wheel = zoom
-			this.handleZoom(e.deltaY);
-		}
+		this.handleZoom(e.deltaY);
 	}
 
 	/**
@@ -381,10 +389,13 @@ export class RadarInteractions {
 	 * Clean up event listeners
 	 */
 	destroy(): void {
+		this.eventSurface.removeEventListener("mousedown", this.boundMouseDown);
+		this.eventSurface.removeEventListener("touchstart", this.boundTouchStart);
+		this.eventSurface.removeEventListener("contextmenu", this.boundContextMenu);
 		document.removeEventListener("mousemove", this.boundMouseMove);
 		document.removeEventListener("mouseup", this.boundMouseUp);
 		document.removeEventListener("touchmove", this.boundTouchMove);
 		document.removeEventListener("touchend", this.boundTouchEnd);
-		this.svg.removeEventListener("wheel", this.boundWheel);
+		document.removeEventListener("wheel", this.boundWheel, true);
 	}
 }
