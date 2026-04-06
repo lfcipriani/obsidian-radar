@@ -3,7 +3,7 @@
  * An Obsidian plugin for creating radar visualizations to track notes and items
  */
 
-import { Plugin } from "obsidian";
+import { Plugin, TFile, WorkspaceLeaf } from "obsidian";
 import { RadarPluginSettings, DEFAULT_SETTINGS, RadarSettingTab } from "./settings";
 import { VIEW_TYPE_RADAR, RADAR_FILE_EXTENSION } from "./constants";
 import { RadarView } from "./ui/RadarView";
@@ -37,9 +37,17 @@ export default class RadarPlugin extends Plugin {
 			const { createRadarCommand } = await import("./commands/createRadar");
 			await createRadarCommand(this);
 		});
+
+		this.app.workspace.onLayoutReady(() => {
+			void this.refreshOpenRadarLeaves();
+		});
 	}
 
-	onunload() {}
+	onunload(): void {
+		for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_RADAR)) {
+			leaf.detach();
+		}
+	}
 
 	async loadSettings(): Promise<void> {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<RadarPluginSettings>);
@@ -47,5 +55,26 @@ export default class RadarPlugin extends Plugin {
 
 	async saveSettings(): Promise<void> {
 		await this.saveData(this.settings);
+	}
+
+	private async refreshOpenRadarLeaves(): Promise<void> {
+		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_RADAR);
+
+		for (const leaf of leaves) {
+			const file = this.getLeafFile(leaf);
+			if (!(file instanceof TFile) || file.extension !== RADAR_FILE_EXTENSION) {
+				leaf.detach();
+				continue;
+			}
+
+			await leaf.openFile(file, {
+				active: leaf === this.app.workspace.getMostRecentLeaf(),
+			});
+		}
+	}
+
+	private getLeafFile(leaf: WorkspaceLeaf): TFile | null {
+		const view = leaf.view as { file?: TFile | null };
+		return view.file ?? null;
 	}
 }
