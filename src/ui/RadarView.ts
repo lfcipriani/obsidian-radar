@@ -146,6 +146,13 @@ export class RadarView extends TextFileView {
 			}
 		);
 
+		this.renderer.setTransform(
+			this.viewState.zoom,
+			this.viewState.panX,
+			this.viewState.panY
+		);
+		this.interactions.setZoom(this.viewState.zoom);
+		this.interactions.setPan(this.viewState.panX, this.viewState.panY);
 	}
 
 	/**
@@ -295,10 +302,10 @@ export class RadarView extends TextFileView {
 
 	private resetZoom(): void {
 		// Reset both zoom and pan
-		this.onZoomChange(1);
-		this.onPanChange(0, 0);
-		this.interactions?.setZoom(1);
-		this.interactions?.setPan(0, 0);
+		this.onZoomChange(DEFAULT_VIEW_STATE.zoom);
+		this.onPanChange(DEFAULT_VIEW_STATE.panX, DEFAULT_VIEW_STATE.panY);
+		this.interactions?.setZoom(DEFAULT_VIEW_STATE.zoom);
+		this.interactions?.setPan(DEFAULT_VIEW_STATE.panX, DEFAULT_VIEW_STATE.panY);
 	}
 
 	/**
