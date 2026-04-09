@@ -4,7 +4,7 @@
  */
 
 import { App, TFile, TFolder } from "obsidian";
-import type { RadarData, Blip } from "../types";
+import type { RadarData, Blip, PriorityLevel, Category } from "../types";
 import {
 	DEFAULT_PRIORITIES,
 	DEFAULT_CATEGORIES,
@@ -98,6 +98,20 @@ export class RadarStore {
 		if (index !== -1) {
 			radar.blips.splice(index, 1);
 		}
+	}
+
+	/**
+	 * Replace all priority levels
+	 */
+	setPriorityLevels(radar: RadarData, levels: PriorityLevel[]): void {
+		radar.priorityLevels = levels;
+	}
+
+	/**
+	 * Replace all categories
+	 */
+	setCategories(radar: RadarData, categories: Category[]): void {
+		radar.categories = categories;
 	}
 
 	/**

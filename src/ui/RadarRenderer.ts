@@ -8,6 +8,7 @@ import { SVG_CONFIG } from "../constants";
 import { polarToCartesian } from "../utils/polarCoordinates";
 import {
 	createSvgContainer,
+	createSvgElement,
 	createCircle,
 	createLine,
 	createText,
@@ -22,6 +23,7 @@ export interface RadarRendererOptions {
 export class RadarRenderer {
 	private svg: SVGSVGElement;
 	private backgroundGroup: SVGGElement;
+	private segmentsGroup: SVGGElement;
 	private categoryGroup: SVGGElement;
 	private blipsGroup: SVGGElement;
 	private radarData: RadarData;
@@ -43,12 +45,14 @@ export class RadarRenderer {
 		// Create SVG structure
 		this.svg = createSvgContainer(SVG_CONFIG.viewBoxSize, "radar-svg");
 		this.backgroundGroup = createGroup("radar-background");
+		this.segmentsGroup = createGroup("radar-category-segments");
 		this.categoryGroup = createGroup("radar-categories");
 		this.blipsGroup = createGroup("radar-blips", {
 			transform: `translate(${SVG_CONFIG.center},${SVG_CONFIG.center})`,
 		});
 
 		this.svg.appendChild(this.backgroundGroup);
+		this.svg.appendChild(this.segmentsGroup);
 		this.svg.appendChild(this.categoryGroup);
 		this.svg.appendChild(this.blipsGroup);
 		this.container.appendChild(this.svg);
@@ -61,6 +65,7 @@ export class RadarRenderer {
 	 */
 	render(): void {
 		this.renderPriorityRings();
+		this.renderCategorySegments();
 		this.renderCategoryDividers();
 		this.renderBlips();
 	}
@@ -88,6 +93,59 @@ export class RadarRenderer {
 				this.backgroundGroup.appendChild(label);
 			}
 		}
+	}
+
+	/**
+	 * Render filled arc segments for categories that have a color set
+	 */
+	private renderCategorySegments(): void {
+		this.segmentsGroup.innerHTML = "";
+
+		const { center, maxRadius } = SVG_CONFIG;
+		const categories = this.radarData.categories;
+
+		if (categories.length === 0) return;
+
+		const sorted = [...categories].sort((a, b) => a.startAngle - b.startAngle);
+
+		for (let i = 0; i < sorted.length; i++) {
+			const cat = sorted[i];
+			if (!cat || !cat.color) continue;
+
+			const next = sorted[(i + 1) % sorted.length];
+			const endAngle = next ? next.startAngle : sorted[0]!.startAngle;
+			let sweepAngle = endAngle - cat.startAngle;
+			if (sweepAngle <= 0) sweepAngle += 360;
+
+			const path = this.buildArcPath(center, center, maxRadius, cat.startAngle, sweepAngle);
+			path.setAttribute("fill", cat.color);
+			path.setAttribute("fill-opacity", "0.12");
+			path.setAttribute("class", "radar-category-segment");
+			this.segmentsGroup.appendChild(path);
+		}
+	}
+
+	/**
+	 * Build a pie-slice SVG path from center to arc
+	 * Angles follow the same convention as polarToCartesian: counterclockwise from positive x-axis
+	 */
+	private buildArcPath(
+		cx: number,
+		cy: number,
+		r: number,
+		startDeg: number,
+		sweepDeg: number
+	): SVGPathElement {
+		const toRad = (d: number) => (d * Math.PI) / 180;
+		const x1 = cx + r * Math.cos(toRad(startDeg));
+		const y1 = cy - r * Math.sin(toRad(startDeg));
+		const endDeg = startDeg + sweepDeg;
+		const x2 = cx + r * Math.cos(toRad(endDeg));
+		const y2 = cy - r * Math.sin(toRad(endDeg));
+		const largeArc = sweepDeg > 180 ? 1 : 0;
+		return createSvgElement("path", {
+			d: `M ${cx},${cy} L ${x1},${y1} A ${r},${r} 0 ${largeArc},0 ${x2},${y2} Z`,
+		}) as SVGPathElement;
 	}
 
 	/**

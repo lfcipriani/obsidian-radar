@@ -137,6 +137,21 @@
 	user-select: none;
 }
 
+/* Category segment fills */
+.radar-category-segment {
+	pointer-events: none;
+}
+
+/* Color row in AddBlipModal */
+.radar-color-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 12px;
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+}
+
 /* Error message */
 .radar-error {
 	color: var(--text-error);

@@ -12,6 +12,8 @@ import { RadarToolbar } from "./RadarToolbar";
 import { RadarInteractions } from "./RadarInteractions";
 import { AddBlipModal } from "./AddBlipModal";
 import { AddTextModal } from "./AddTextModal";
+import { EditBlipColorModal } from "./EditBlipColorModal";
+import { CustomizeRadarModal } from "./CustomizeRadarModal";
 
 export class RadarView extends TextFileView {
 	private plugin: RadarPlugin;
@@ -100,6 +102,7 @@ export class RadarView extends TextFileView {
 		this.toolbar = new RadarToolbar(toolbarContainer, {
 			onAddNote: () => this.openAddNoteModal(),
 			onAddText: () => this.openAddTextModal(),
+			onCustomize: () => this.openCustomizeModal(),
 			onZoomIn: () => this.zoomIn(),
 			onZoomOut: () => this.zoomOut(),
 			onResetZoom: () => this.resetZoom(),
@@ -180,6 +183,13 @@ export class RadarView extends TextFileView {
 
 		menu.addItem((item) =>
 			item
+				.setTitle("Edit color")
+				.setIcon("palette")
+				.onClick(() => this.openEditColorModal(blip))
+		);
+
+		menu.addItem((item) =>
+			item
 				.setTitle("Remove from radar")
 				.setIcon("trash")
 				.onClick(() => this.removeBlip(blipId))
@@ -230,13 +240,14 @@ export class RadarView extends TextFileView {
 	private openAddNoteModal(): void {
 		if (!this.radarData) return;
 
-		const modal = new AddBlipModal(this.app, (notePath, title) => {
+		const modal = new AddBlipModal(this.app, (notePath, title, color) => {
 			this.addBlip({
 				type: "note",
 				title,
 				notePath,
 				r: 0.5, // Default to middle
 				theta: Math.random() * 360, // Random angle
+				color,
 			});
 		});
 		modal.open();
@@ -248,15 +259,53 @@ export class RadarView extends TextFileView {
 	private openAddTextModal(): void {
 		if (!this.radarData) return;
 
-		const modal = new AddTextModal(this.app, (title) => {
+		const modal = new AddTextModal(this.app, (title, color) => {
 			this.addBlip({
 				type: "text",
 				title,
 				r: 0.5,
 				theta: Math.random() * 360,
+				color,
 			});
 		});
 		modal.open();
+	}
+
+	/**
+	 * Open modal to edit a blip's color
+	 */
+	private openEditColorModal(blip: Blip): void {
+		if (!this.radarData) return;
+
+		const modal = new EditBlipColorModal(this.app, blip.color, (color) => {
+			if (!this.radarData) return;
+			this.plugin.radarStore.updateBlip(this.radarData, blip.id, { color });
+			this.renderer?.updateData(this.radarData);
+			this.requestSave();
+		});
+		modal.open();
+	}
+
+	/**
+	 * Open modal to customize priority levels and categories
+	 */
+	private openCustomizeModal(): void {
+		if (!this.radarData) return;
+
+		new CustomizeRadarModal(this.app, this.radarData, {
+			onPrioritiesChanged: (levels) => {
+				if (!this.radarData) return;
+				this.plugin.radarStore.setPriorityLevels(this.radarData, levels);
+				this.renderer?.updateData(this.radarData);
+				this.requestSave();
+			},
+			onCategoriesChanged: (categories) => {
+				if (!this.radarData) return;
+				this.plugin.radarStore.setCategories(this.radarData, categories);
+				this.renderer?.updateData(this.radarData);
+				this.requestSave();
+			},
+		}).open();
 	}
 
 	/**

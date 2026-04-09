@@ -58,9 +58,9 @@ export interface ViewState {
 
 /** Complete radar data structure stored in JSON files */
 export interface RadarData {
-	/** Priority levels (1-7 rings) */
+	/** Priority levels (1-8 rings) */
 	priorityLevels: PriorityLevel[];
-	/** Categories (0-8 segments) */
+	/** Categories (3-8 segments) */
 	categories: Category[];
 	/** Blips on the radar */
 	blips: Blip[];

@@ -8,6 +8,7 @@ import { setIcon } from "obsidian";
 export interface RadarToolbarOptions {
 	onAddNote: () => void;
 	onAddText: () => void;
+	onCustomize: () => void;
 	onZoomIn: () => void;
 	onZoomOut: () => void;
 	onResetZoom: () => void;
@@ -41,6 +42,15 @@ export class RadarToolbar {
 		setIcon(addTextBtn, "text");
 		addTextBtn.createSpan({ text: "Add text" });
 		addTextBtn.addEventListener("click", options.onAddText);
+
+		// Customize button
+		const customizeBtn = this.container.createEl("button", {
+			cls: "radar-toolbar-btn",
+			attr: { "aria-label": "Customize radar" },
+		});
+		setIcon(customizeBtn, "settings-2");
+		customizeBtn.createSpan({ text: "Customize" });
+		customizeBtn.addEventListener("click", options.onCustomize);
 
 		// Spacer
 		this.container.createDiv({ cls: "radar-toolbar-spacer" });

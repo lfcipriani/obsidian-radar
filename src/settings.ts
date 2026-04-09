@@ -29,10 +29,10 @@ export class RadarSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Default priority levels")
-			.setDesc("Number of priority rings for new radars (1-7)")
+			.setDesc("Number of priority rings for new radars (1-8)")
 			.addSlider((slider) =>
 				slider
-					.setLimits(1, 7, 1)
+					.setLimits(1, 8, 1)
 					.setValue(this.plugin.settings.defaultPriorityCount)
 					.setDynamicTooltip()
 					.onChange(async (value) => {
@@ -43,10 +43,10 @@ export class RadarSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Default categories")
-			.setDesc("Number of category segments for new radars (0-8)")
+			.setDesc("Number of category segments for new radars (3-8)")
 			.addSlider((slider) =>
 				slider
-					.setLimits(0, 8, 1)
+					.setLimits(3, 8, 1)
 					.setValue(this.plugin.settings.defaultCategoryCount)
 					.setDynamicTooltip()
 					.onChange(async (value) => {

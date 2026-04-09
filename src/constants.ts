@@ -19,12 +19,12 @@ export const DEFAULT_PRIORITIES: PriorityLevel[] = [
 	{ id: "p4", name: "Low", maxRadius: 1.0 },
 ];
 
-/** Default categories (4 unnamed segments) */
+/** Default categories (4 unnamed segments, starting at top going clockwise) */
 export const DEFAULT_CATEGORIES: Category[] = [
-	{ id: "c1", name: "", startAngle: 0 },
-	{ id: "c2", name: "", startAngle: 90 },
-	{ id: "c3", name: "", startAngle: 180 },
-	{ id: "c4", name: "", startAngle: 270 },
+	{ id: "c1", name: "", startAngle: 90 },
+	{ id: "c2", name: "", startAngle: 0 },
+	{ id: "c3", name: "", startAngle: 270 },
+	{ id: "c4", name: "", startAngle: 180 },
 ];
 
 /** Default plugin settings */
