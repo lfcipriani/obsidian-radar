@@ -34,8 +34,8 @@ export const DEFAULT_SETTINGS: RadarPluginSettings = {
 };
 
 /** Default radius of blip circles in pixels */
-export const DEFAULT_BLIP_RADIUS = 10;
-export const MIN_BLIP_RADIUS = 5;
+export const DEFAULT_BLIP_RADIUS = 5;
+export const MIN_BLIP_RADIUS = 3;
 export const MAX_BLIP_RADIUS = 20;
 
 const RADAR_VIEWBOX_PADDING = 300;
@@ -57,9 +57,9 @@ export const SVG_CONFIG = {
 	/** Stroke dash array for priority rings */
 	dashArray: "5,5",
 	/** Minimum zoom level */
-	minZoom: 0.5,
+	minZoom: 1,
 	/** Maximum zoom level */
-	maxZoom: 4,
+	maxZoom: 6,
 	/** Zoom step for buttons/scroll */
 	zoomStep: 0.25,
 };

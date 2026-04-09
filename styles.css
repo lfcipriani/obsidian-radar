@@ -135,23 +135,31 @@
 	cursor: grabbing;
 }
 
-.radar-blip.dragging .radar-blip-circle {
-	stroke: var(--interactive-accent);
-	stroke-width: 2;
+.radar-blip-flare {
+	fill: var(--interactive-accent);
+	opacity: 0.40;
+	filter: blur(6px);
+	transition: opacity 0.15s ease;
+	pointer-events: none;
 }
 
-.radar-blip-circle {
+.radar-blip-dot {
 	fill: var(--interactive-accent);
-	stroke: none;
-	transition: transform 0.1s ease, stroke 0.1s ease, stroke-width 0.1s ease;
+	transition: transform 0.1s ease;
 	transform-origin: center;
 	transform-box: fill-box;
 }
 
-.radar-blip:hover .radar-blip-circle {
-	transform: scale(1.2);
-	stroke: var(--interactive-accent-hover);
-	stroke-width: 2;
+.radar-blip:hover .radar-blip-flare {
+	opacity: 0.5;
+}
+
+.radar-blip:hover .radar-blip-dot {
+	transform: scale(1.3);
+}
+
+.radar-blip.dragging .radar-blip-flare {
+	opacity: 0.6;
 }
 
 .radar-blip-title {

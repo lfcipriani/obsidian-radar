@@ -296,16 +296,23 @@ export class RadarRenderer {
 			transform: `translate(${pos.x},${pos.y})`,
 		});
 
-		// Create blip circle
-		const circle = createCircle(0, 0, blipRadius, "radar-blip-circle");
+		// Create flare (glow halo behind the dot)
+		const flare = createCircle(0, 0, blipRadius * 2, "radar-blip-flare");
 		if (blip.color) {
-			circle.style.fill = blip.color;
+			flare.style.fill = blip.color;
 		}
 
-		// Create blip title
-		const title = createText(0, -blipRadius - 5, blip.title, "radar-blip-title");
+		// Create solid dot
+		const dot = createCircle(0, 0, blipRadius, "radar-blip-dot");
+		if (blip.color) {
+			dot.style.fill = blip.color;
+		}
 
-		blipGroup.appendChild(circle);
+		// Create blip title (cleared above the flare)
+		const title = createText(0, -blipRadius * 2 - 4, blip.title, "radar-blip-title");
+
+		blipGroup.appendChild(flare);
+		blipGroup.appendChild(dot);
 		blipGroup.appendChild(title);
 
 		this.blipsGroup.appendChild(blipGroup);
