@@ -54,9 +54,9 @@ export class CustomizeRadarModal extends Modal {
 		this.contentEl.empty();
 		if (h2) this.contentEl.appendChild(h2);
 
-		this.renderPrioritiesSection(this.contentEl);
-		this.renderCategoriesSection(this.contentEl);
 		this.renderBlipSection(this.contentEl);
+		this.renderCategoriesSection(this.contentEl);
+		this.renderPrioritiesSection(this.contentEl);
 	}
 
 	private renderPrioritiesSection(container: HTMLElement): void {
