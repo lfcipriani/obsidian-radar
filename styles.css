@@ -95,8 +95,15 @@
 }
 
 .radar-category-label {
-	font-size: 12px;
+	font-size: 10px;
 	fill: var(--text-muted);
+	text-anchor: middle;
+	dominant-baseline: middle;
+	pointer-events: none;
+	user-select: none;
+}
+
+.radar-category-label textPath {
 	text-anchor: middle;
 	dominant-baseline: middle;
 }

@@ -62,6 +62,8 @@ export interface RadarData {
 	priorityLevels: PriorityLevel[];
 	/** Categories (3-8 segments) */
 	categories: Category[];
+	/** Radius of blip circles in pixels */
+	blipRadius: number;
 	/** Blips on the radar */
 	blips: Blip[];
 }
@@ -72,6 +74,4 @@ export interface RadarPluginSettings {
 	defaultPriorityCount: number;
 	/** Default number of categories for new radars */
 	defaultCategoryCount: number;
-	/** Blip circle radius in pixels */
-	blipRadius: number;
 }

@@ -12,7 +12,6 @@ export type { RadarPluginSettings } from "./types";
 export const DEFAULT_SETTINGS: RadarPluginSettings = {
 	defaultPriorityCount: 4,
 	defaultCategoryCount: 4,
-	blipRadius: 10,
 };
 
 export class RadarSettingTab extends PluginSettingTab {
@@ -51,20 +50,6 @@ export class RadarSettingTab extends PluginSettingTab {
 					.setDynamicTooltip()
 					.onChange(async (value) => {
 						this.plugin.settings.defaultCategoryCount = value;
-						await this.plugin.saveSettings();
-					})
-			);
-
-		new Setting(containerEl)
-			.setName("Blip size")
-			.setDesc("Radius of blip circles in pixels (5-20)")
-			.addSlider((slider) =>
-				slider
-					.setLimits(5, 20, 1)
-					.setValue(this.plugin.settings.blipRadius)
-					.setDynamicTooltip()
-					.onChange(async (value) => {
-						this.plugin.settings.blipRadius = value;
 						await this.plugin.saveSettings();
 					})
 			);

@@ -61,7 +61,9 @@ export class RadarView extends TextFileView {
 		}
 
 		try {
-			this.radarData = JSON.parse(data) as RadarData;
+			this.radarData = this.plugin.radarStore.normalizeRadarData(
+				JSON.parse(data) as Partial<RadarData>
+			);
 			this.renderRadar();
 		} catch (error) {
 			console.error("Failed to parse radar data:", error);
@@ -132,9 +134,7 @@ export class RadarView extends TextFileView {
 		this.svgContainer.empty();
 
 		// Create renderer
-		this.renderer = new RadarRenderer(this.svgContainer, this.radarData, {
-			blipRadius: this.plugin.settings.blipRadius,
-		});
+		this.renderer = new RadarRenderer(this.svgContainer, this.radarData);
 
 		// Create interactions handler
 		this.interactions = new RadarInteractions(
@@ -302,6 +302,12 @@ export class RadarView extends TextFileView {
 			onCategoriesChanged: (categories) => {
 				if (!this.radarData) return;
 				this.plugin.radarStore.setCategories(this.radarData, categories);
+				this.renderer?.updateData(this.radarData);
+				this.requestSave();
+			},
+			onBlipRadiusChanged: (blipRadius) => {
+				if (!this.radarData) return;
+				this.plugin.radarStore.setBlipRadius(this.radarData, blipRadius);
 				this.renderer?.updateData(this.radarData);
 				this.requestSave();
 			},

@@ -6,20 +6,24 @@
 import { App, Modal, Setting } from "obsidian";
 import type { RadarData, PriorityLevel, Category } from "../types";
 import { generateId } from "../utils/idGenerator";
+import { MAX_BLIP_RADIUS, MIN_BLIP_RADIUS } from "../constants";
 
 const MAX_PRIORITY_LEVELS = 8;
 const MAX_CATEGORIES = 8;
+const MAX_CATEGORY_NAME_LENGTH = 35;
 const MIN_PRIORITY_LEVELS = 1;
 const MIN_CATEGORIES = 3;
 
 export interface CustomizeRadarModalOptions {
 	onPrioritiesChanged: (levels: PriorityLevel[]) => void;
 	onCategoriesChanged: (categories: Category[]) => void;
+	onBlipRadiusChanged: (blipRadius: number) => void;
 }
 
 export class CustomizeRadarModal extends Modal {
 	private priorities: PriorityLevel[];
 	private categories: Category[];
+	private blipRadius: number;
 	private options: CustomizeRadarModalOptions;
 
 	constructor(
@@ -31,11 +35,12 @@ export class CustomizeRadarModal extends Modal {
 		// Work on deep copies so cancel doesn't affect live data
 		this.priorities = radarData.priorityLevels.map((p) => ({ ...p }));
 		this.categories = radarData.categories.map((c) => ({ ...c }));
+		this.blipRadius = radarData.blipRadius;
 		this.options = options;
 	}
 
 	onOpen(): void {
-		this.contentEl.createEl("h2", { text: "Customize Radar" });
+		this.contentEl.createEl("h2", { text: "Customize radar" });
 		this.refresh();
 	}
 
@@ -51,10 +56,11 @@ export class CustomizeRadarModal extends Modal {
 
 		this.renderPrioritiesSection(this.contentEl);
 		this.renderCategoriesSection(this.contentEl);
+		this.renderBlipSection(this.contentEl);
 	}
 
 	private renderPrioritiesSection(container: HTMLElement): void {
-		container.createEl("h3", { text: "Priority Levels" });
+		container.createEl("h3", { text: "Priority levels" });
 
 		for (const priority of this.priorities) {
 			new Setting(container)
@@ -83,10 +89,10 @@ export class CustomizeRadarModal extends Modal {
 
 		new Setting(container).addButton((btn) =>
 			btn
-				.setButtonText("+ Add Level")
+				.setButtonText("Add level")
 				.setDisabled(this.priorities.length >= MAX_PRIORITY_LEVELS)
 				.onClick(() => {
-					this.priorities.push({ id: generateId(), name: "New Level", maxRadius: 1 });
+					this.priorities.push({ id: generateId(), name: "New level", maxRadius: 1 });
 					this.redistributePriorityRadii();
 					this.options.onPrioritiesChanged([...this.priorities]);
 					this.refresh();
@@ -103,8 +109,15 @@ export class CustomizeRadarModal extends Modal {
 					text
 						.setValue(category.name)
 						.setPlaceholder("Category name")
+						.then((component) => {
+							component.inputEl.maxLength = MAX_CATEGORY_NAME_LENGTH;
+						})
 						.onChange((value) => {
-							category.name = value;
+							const trimmedValue = value.slice(0, MAX_CATEGORY_NAME_LENGTH);
+							category.name = trimmedValue;
+							if (trimmedValue !== value) {
+								text.setValue(trimmedValue);
+							}
 							this.options.onCategoriesChanged([...this.categories]);
 						})
 				)
@@ -115,6 +128,16 @@ export class CustomizeRadarModal extends Modal {
 						this.options.onCategoriesChanged([...this.categories]);
 					});
 				})
+				.addExtraButton((btn) =>
+					btn
+						.setIcon("rotate-ccw")
+						.setTooltip("Clear category color")
+						.onClick(() => {
+							delete category.color;
+							this.options.onCategoriesChanged([...this.categories]);
+							this.refresh();
+						})
+				)
 				.addExtraButton((btn) =>
 					btn
 						.setIcon("trash")
@@ -131,7 +154,7 @@ export class CustomizeRadarModal extends Modal {
 
 		new Setting(container).addButton((btn) =>
 			btn
-				.setButtonText("+ Add Category")
+				.setButtonText("Add category")
 				.setDisabled(this.categories.length >= MAX_CATEGORIES)
 				.onClick(() => {
 					this.categories.push({ id: generateId(), name: "", startAngle: 0 });
@@ -140,6 +163,24 @@ export class CustomizeRadarModal extends Modal {
 					this.refresh();
 				})
 		);
+	}
+
+	private renderBlipSection(container: HTMLElement): void {
+		container.createEl("h3", { text: "Blips" });
+
+		new Setting(container)
+			.setName("Blip size")
+			.setDesc(`Radius of blip circles in pixels (${MIN_BLIP_RADIUS}-${MAX_BLIP_RADIUS})`)
+			.addSlider((slider) =>
+				slider
+					.setLimits(MIN_BLIP_RADIUS, MAX_BLIP_RADIUS, 1)
+					.setValue(this.blipRadius)
+					.setDynamicTooltip()
+					.onChange((value) => {
+						this.blipRadius = value;
+						this.options.onBlipRadiusChanged(value);
+					})
+			);
 	}
 
 	private redistributePriorityRadii(): void {

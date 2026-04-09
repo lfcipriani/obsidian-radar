@@ -16,7 +16,7 @@ export class AddBlipModal extends FuzzySuggestModal<TFile> {
 	}
 
 	onOpen(): void {
-		super.onOpen();
+		void super.onOpen();
 		const colorRow = this.modalEl.createDiv({ cls: "radar-color-row" });
 		colorRow.createSpan({ text: "Color: " });
 		const colorInput = colorRow.createEl("input", { attr: { type: "color" } });

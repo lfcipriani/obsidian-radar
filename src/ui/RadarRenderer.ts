@@ -16,18 +16,15 @@ import {
 	setAttributes,
 } from "../utils/svgHelpers";
 
-export interface RadarRendererOptions {
-	blipRadius: number;
-}
-
 export class RadarRenderer {
+	private static readonly categoryLabelRadiusOffset = 28;
+
 	private svg: SVGSVGElement;
 	private backgroundGroup: SVGGElement;
 	private segmentsGroup: SVGGElement;
 	private categoryGroup: SVGGElement;
 	private blipsGroup: SVGGElement;
 	private radarData: RadarData;
-	private options: RadarRendererOptions;
 
 	// Transform state
 	private currentPanX = 0;
@@ -36,11 +33,9 @@ export class RadarRenderer {
 
 	constructor(
 		private container: HTMLElement,
-		radarData: RadarData,
-		options: RadarRendererOptions
+		radarData: RadarData
 	) {
 		this.radarData = radarData;
-		this.options = options;
 
 		// Create SVG structure
 		this.svg = createSvgContainer(SVG_CONFIG.viewBoxSize, "radar-svg");
@@ -145,7 +140,7 @@ export class RadarRenderer {
 		const largeArc = sweepDeg > 180 ? 1 : 0;
 		return createSvgElement("path", {
 			d: `M ${cx},${cy} L ${x1},${y1} A ${r},${r} 0 ${largeArc},0 ${x2},${y2} Z`,
-		}) as SVGPathElement;
+		});
 	}
 
 	/**
@@ -174,21 +169,50 @@ export class RadarRenderer {
 			);
 			this.categoryGroup.appendChild(line);
 
-			// Add category label if named
-			if (category.name) {
-				// Position label at 60% radius in the middle of the segment
-				const nextCategory = this.getNextCategory(category);
-				const midAngle = this.getMidAngle(category.startAngle, nextCategory?.startAngle ?? category.startAngle + 360 / categories.length);
-				const labelPos = polarToCartesian(0.6, midAngle, maxRadius);
-				const label = createText(
-					center + labelPos.x,
-					center + labelPos.y,
-					category.name,
-					"radar-category-label"
-				);
+			if (category.name.trim()) {
+				const label = this.createCategoryArcLabel(category, center, maxRadius);
 				this.categoryGroup.appendChild(label);
 			}
 		}
+	}
+
+	/**
+	 * Create an outside-the-ring arc label for a category
+	 */
+	private createCategoryArcLabel(
+		category: { id: string; name: string; startAngle: number },
+		center: number,
+		maxRadius: number
+	): SVGTextElement {
+		const nextCategory = this.getNextCategory(category);
+		const endAngle = nextCategory?.startAngle ?? category.startAngle + 360 / this.radarData.categories.length;
+		const sweepAngle = this.getSweepAngle(category.startAngle, endAngle);
+		const midAngle = this.normalizeAngle(this.getMidAngle(category.startAngle, endAngle));
+		const shouldReverseForReadableText = midAngle > 0 && midAngle < 180;
+		const radius = maxRadius + RadarRenderer.categoryLabelRadiusOffset;
+		const pathId = `radar-category-label-path-${category.id}`;
+		const path = createSvgElement("path", {
+			id: pathId,
+			d: this.buildOpenArcPath(
+				center,
+				center,
+				radius,
+				shouldReverseForReadableText ? category.startAngle + sweepAngle : category.startAngle,
+				shouldReverseForReadableText ? -sweepAngle : sweepAngle
+			),
+			fill: "none",
+		});
+		const text = createSvgElement("text", {
+			class: "radar-category-label",
+		});
+		const textPath = createSvgElement("textPath", {
+			href: `#${pathId}`,
+			"startOffset": "50%",
+		});
+		textPath.textContent = category.name;
+		text.appendChild(textPath);
+		this.categoryGroup.appendChild(path);
+		return text;
 	}
 
 	/**
@@ -213,6 +237,39 @@ export class RadarRenderer {
 		return (startAngle + endAngle) / 2;
 	}
 
+	private getSweepAngle(startAngle: number, endAngle: number): number {
+		let sweepAngle = endAngle - startAngle;
+		if (sweepAngle <= 0) {
+			sweepAngle += 360;
+		}
+		return sweepAngle;
+	}
+
+	private normalizeAngle(angle: number): number {
+		return ((angle % 360) + 360) % 360;
+	}
+
+	/**
+	 * Build an open SVG arc path for category labels
+	 */
+	private buildOpenArcPath(
+		cx: number,
+		cy: number,
+		r: number,
+		startDeg: number,
+		sweepDeg: number
+	): string {
+		const toRad = (d: number) => (d * Math.PI) / 180;
+		const x1 = cx + r * Math.cos(toRad(startDeg));
+		const y1 = cy - r * Math.sin(toRad(startDeg));
+		const endDeg = startDeg + sweepDeg;
+		const x2 = cx + r * Math.cos(toRad(endDeg));
+		const y2 = cy - r * Math.sin(toRad(endDeg));
+		const largeArc = Math.abs(sweepDeg) > 180 ? 1 : 0;
+		const sweepFlag = sweepDeg >= 0 ? 0 : 1;
+		return `M ${x1},${y1} A ${r},${r} 0 ${largeArc},${sweepFlag} ${x2},${y2}`;
+	}
+
 	/**
 	 * Render all blips
 	 */
@@ -229,7 +286,7 @@ export class RadarRenderer {
 	 */
 	private renderBlip(blip: Blip): void {
 		const { maxRadius } = SVG_CONFIG;
-		const { blipRadius } = this.options;
+		const { blipRadius } = this.radarData;
 
 		const pos = polarToCartesian(blip.r, blip.theta, maxRadius);
 

@@ -124,19 +124,19 @@ export class RadarInteractions {
 	 * Mouse down on SVG - start blip drag or pan
 	 */
 	private onSvgMouseDown(e: MouseEvent): void {
-		if (e.button !== 0 && e.button !== 2) {
+		if (e.button !== 0) {
 			return;
 		}
 
 		const target = e.target as SVGElement;
 		const blipGroup = target.closest(".radar-blip") as SVGGElement;
 
-		if (blipGroup && e.button === 0) {
+		if (blipGroup) {
 			// Clicked on a blip - start blip drag
 			e.preventDefault();
 			this.startDrag(blipGroup, e.clientX, e.clientY);
 		} else {
-			// Left-drag on empty space or right-drag anywhere pans the radar.
+			// Left-drag on empty space pans the radar.
 			e.preventDefault();
 			this.startPan(e.clientX, e.clientY);
 		}
@@ -311,9 +311,6 @@ export class RadarInteractions {
 				const clampedY = clamp(coords.y, -SVG_CONFIG.center, SVG_CONFIG.center);
 				const polar = cartesianToPolar(clampedX, clampedY, SVG_CONFIG.maxRadius);
 				this.options.onBlipMove(blipId, polar.r, polar.theta);
-			} else {
-				// It was a click - trigger click callback
-				this.options.onBlipClick(blipId, event);
 			}
 		}
 
@@ -330,10 +327,19 @@ export class RadarInteractions {
 	}
 
 	/**
-	 * Prevent the browser context menu from interrupting right-drag panning.
+	 * Open the blip context menu on right-click and leave other targets alone.
 	 */
 	private onContextMenu(e: MouseEvent): void {
+		const target = e.target as SVGElement;
+		const blipGroup = target.closest(".radar-blip");
+		const blipId = blipGroup?.getAttribute("data-blip-id");
+
+		if (!blipId) {
+			return;
+		}
+
 		e.preventDefault();
+		this.options.onBlipClick(blipId, e);
 	}
 
 	/**

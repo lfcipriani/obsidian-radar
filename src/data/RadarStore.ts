@@ -8,6 +8,9 @@ import type { RadarData, Blip, PriorityLevel, Category } from "../types";
 import {
 	DEFAULT_PRIORITIES,
 	DEFAULT_CATEGORIES,
+	DEFAULT_BLIP_RADIUS,
+	MIN_BLIP_RADIUS,
+	MAX_BLIP_RADIUS,
 	RADAR_FILE_EXTENSION,
 } from "../constants";
 import { generateId } from "../utils/idGenerator";
@@ -22,6 +25,7 @@ export class RadarStore {
 		return {
 			priorityLevels: [...DEFAULT_PRIORITIES],
 			categories: [...DEFAULT_CATEGORIES],
+			blipRadius: DEFAULT_BLIP_RADIUS,
 			blips: [],
 		};
 	}
@@ -45,8 +49,8 @@ export class RadarStore {
 	 */
 	async loadRadar(file: TFile): Promise<RadarData> {
 		const content = await this.app.vault.read(file);
-		const data = JSON.parse(content) as RadarData;
-		return data;
+		const data = JSON.parse(content) as Partial<RadarData>;
+		return this.normalizeRadarData(data);
 	}
 
 	/**
@@ -55,6 +59,15 @@ export class RadarStore {
 	async saveRadar(file: TFile, data: RadarData): Promise<void> {
 		const content = JSON.stringify(data, null, 2);
 		await this.app.vault.modify(file, content);
+	}
+
+	normalizeRadarData(data: Partial<RadarData>): RadarData {
+		return {
+			priorityLevels: data.priorityLevels ?? [...DEFAULT_PRIORITIES],
+			categories: data.categories ?? [...DEFAULT_CATEGORIES],
+			blipRadius: this.normalizeBlipRadius(data.blipRadius),
+			blips: data.blips ?? [],
+		};
 	}
 
 	/**
@@ -112,6 +125,20 @@ export class RadarStore {
 	 */
 	setCategories(radar: RadarData, categories: Category[]): void {
 		radar.categories = categories;
+	}
+
+	/**
+	 * Update the radar's blip radius
+	 */
+	setBlipRadius(radar: RadarData, blipRadius: number): void {
+		radar.blipRadius = this.normalizeBlipRadius(blipRadius);
+	}
+
+	private normalizeBlipRadius(blipRadius: number | undefined): number {
+		if (typeof blipRadius !== "number" || Number.isNaN(blipRadius)) {
+			return DEFAULT_BLIP_RADIUS;
+		}
+		return Math.max(MIN_BLIP_RADIUS, Math.min(MAX_BLIP_RADIUS, blipRadius));
 	}
 
 	/**

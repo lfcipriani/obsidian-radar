@@ -31,8 +31,12 @@ export const DEFAULT_CATEGORIES: Category[] = [
 export const DEFAULT_SETTINGS: RadarPluginSettings = {
 	defaultPriorityCount: 4,
 	defaultCategoryCount: 4,
-	blipRadius: 10,
 };
+
+/** Default radius of blip circles in pixels */
+export const DEFAULT_BLIP_RADIUS = 10;
+export const MIN_BLIP_RADIUS = 5;
+export const MAX_BLIP_RADIUS = 20;
 
 const RADAR_VIEWBOX_PADDING = 300;
 const RADAR_BASE_DIAMETER = 600;
