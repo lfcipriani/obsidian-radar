@@ -299,7 +299,7 @@ export class RadarRenderer {
 		// Create blip circle
 		const circle = createCircle(0, 0, blipRadius, "radar-blip-circle");
 		if (blip.color) {
-			circle.setAttribute("fill", blip.color);
+			circle.style.fill = blip.color;
 		}
 
 		// Create blip title
