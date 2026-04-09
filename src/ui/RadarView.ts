@@ -12,7 +12,6 @@ import { RadarToolbar } from "./RadarToolbar";
 import { RadarInteractions } from "./RadarInteractions";
 import { AddBlipModal } from "./AddBlipModal";
 import { AddTextModal } from "./AddTextModal";
-import { EditBlipColorModal } from "./EditBlipColorModal";
 import { CustomizeRadarModal } from "./CustomizeRadarModal";
 
 export class RadarView extends TextFileView {
@@ -183,13 +182,6 @@ export class RadarView extends TextFileView {
 
 		menu.addItem((item) =>
 			item
-				.setTitle("Edit color")
-				.setIcon("palette")
-				.onClick(() => this.openEditColorModal(blip))
-		);
-
-		menu.addItem((item) =>
-			item
 				.setTitle("Remove from radar")
 				.setIcon("trash")
 				.onClick(() => this.removeBlip(blipId))
@@ -240,14 +232,13 @@ export class RadarView extends TextFileView {
 	private openAddNoteModal(): void {
 		if (!this.radarData) return;
 
-		const modal = new AddBlipModal(this.app, (notePath, title, color) => {
+		const modal = new AddBlipModal(this.app, (notePath, title) => {
 			this.addBlip({
 				type: "note",
 				title,
 				notePath,
-				r: 0.5, // Default to middle
-				theta: Math.random() * 360, // Random angle
-				color,
+				r: 0.5,
+				theta: Math.random() * 360,
 			});
 		});
 		modal.open();
@@ -259,29 +250,13 @@ export class RadarView extends TextFileView {
 	private openAddTextModal(): void {
 		if (!this.radarData) return;
 
-		const modal = new AddTextModal(this.app, (title, color) => {
+		const modal = new AddTextModal(this.app, (title) => {
 			this.addBlip({
 				type: "text",
 				title,
 				r: 0.5,
 				theta: Math.random() * 360,
-				color,
 			});
-		});
-		modal.open();
-	}
-
-	/**
-	 * Open modal to edit a blip's color
-	 */
-	private openEditColorModal(blip: Blip): void {
-		if (!this.radarData) return;
-
-		const modal = new EditBlipColorModal(this.app, blip.color, (color) => {
-			if (!this.radarData) return;
-			this.plugin.radarStore.updateBlip(this.radarData, blip.id, { color });
-			this.renderer?.updateData(this.radarData);
-			this.requestSave();
 		});
 		modal.open();
 	}

@@ -7,10 +7,9 @@ import { App, Modal, Setting } from "obsidian";
 
 export class AddTextModal extends Modal {
 	private title = "";
-	private color = "";
-	private onSubmit: (title: string, color?: string) => void;
+	private onSubmit: (title: string) => void;
 
-	constructor(app: App, onSubmit: (title: string, color?: string) => void) {
+	constructor(app: App, onSubmit: (title: string) => void) {
 		super(app);
 		this.onSubmit = onSubmit;
 	}
@@ -32,15 +31,6 @@ export class AddTextModal extends Modal {
 			);
 
 		new Setting(contentEl)
-			.setName("Color")
-			.setDesc("Optional blip color")
-			.addColorPicker((picker) =>
-				picker.onChange((value) => {
-					this.color = value;
-				})
-			);
-
-		new Setting(contentEl)
 			.addButton((btn) =>
 				btn
 					.setButtonText("Add")
@@ -48,7 +38,7 @@ export class AddTextModal extends Modal {
 					.onClick(() => {
 						if (this.title.trim()) {
 							this.close();
-							this.onSubmit(this.title.trim(), this.color || undefined);
+							this.onSubmit(this.title.trim());
 						}
 					})
 			)
