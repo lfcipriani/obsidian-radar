@@ -62,8 +62,14 @@ export class CustomizeRadarModal extends Modal {
 	private renderPrioritiesSection(container: HTMLElement): void {
 		container.createEl("h3", { text: "Priority levels" });
 
+		const rows: HTMLElement[] = [];
+
 		for (const priority of this.priorities) {
-			new Setting(container)
+			const s = new Setting(container)
+				.addExtraButton((btn) => {
+					btn.setIcon("grip-vertical").setTooltip("Drag to reorder");
+					btn.extraSettingsEl.addClass("radar-drag-handle");
+				})
 				.addText((text) =>
 					text
 						.setValue(priority.name)
@@ -85,7 +91,16 @@ export class CustomizeRadarModal extends Modal {
 							this.refresh();
 						})
 				);
+			rows.push(s.settingEl);
 		}
+
+		this.setupDragAndDrop(rows, (from, to) => {
+			const moved = this.priorities.splice(from, 1)[0]!;
+			this.priorities.splice(from < to ? to - 1 : to, 0, moved);
+			this.redistributePriorityRadii();
+			this.options.onPrioritiesChanged([...this.priorities]);
+			this.refresh();
+		});
 
 		new Setting(container).addButton((btn) =>
 			btn
@@ -103,8 +118,14 @@ export class CustomizeRadarModal extends Modal {
 	private renderCategoriesSection(container: HTMLElement): void {
 		container.createEl("h3", { text: "Categories" });
 
+		const rows: HTMLElement[] = [];
+
 		for (const category of this.categories) {
-			new Setting(container)
+			const s = new Setting(container)
+				.addExtraButton((btn) => {
+					btn.setIcon("grip-vertical").setTooltip("Drag to reorder");
+					btn.extraSettingsEl.addClass("radar-drag-handle");
+				})
 				.addText((text) =>
 					text
 						.setValue(category.name)
@@ -150,7 +171,16 @@ export class CustomizeRadarModal extends Modal {
 							this.refresh();
 						})
 				);
+			rows.push(s.settingEl);
 		}
+
+		this.setupDragAndDrop(rows, (from, to) => {
+			const moved = this.categories.splice(from, 1)[0]!;
+			this.categories.splice(from < to ? to - 1 : to, 0, moved);
+			this.redistributeCategoryAngles();
+			this.options.onCategoriesChanged([...this.categories]);
+			this.refresh();
+		});
 
 		new Setting(container).addButton((btn) =>
 			btn
@@ -181,6 +211,46 @@ export class CustomizeRadarModal extends Modal {
 						this.options.onBlipRadiusChanged(value);
 					})
 			);
+	}
+
+	private setupDragAndDrop(rows: HTMLElement[], onReorder: (from: number, to: number) => void): void {
+		let dragSrcIndex: number | null = null;
+
+		rows.forEach((row, i) => {
+			row.draggable = true;
+
+			row.addEventListener("dragstart", (e) => {
+				dragSrcIndex = i;
+				e.dataTransfer?.setData("text/plain", String(i));
+				setTimeout(() => row.addClass("radar-drag-source"), 0);
+			});
+
+			row.addEventListener("dragend", () => {
+				row.removeClass("radar-drag-source");
+				rows.forEach((r) => r.removeClass("radar-drag-over"));
+				dragSrcIndex = null;
+			});
+
+			row.addEventListener("dragenter", (e) => {
+				e.preventDefault();
+				if (dragSrcIndex !== null && dragSrcIndex !== i) {
+					rows.forEach((r) => r.removeClass("radar-drag-over"));
+					row.addClass("radar-drag-over");
+				}
+			});
+
+			row.addEventListener("dragover", (e) => {
+				e.preventDefault();
+			});
+
+			row.addEventListener("drop", (e) => {
+				e.preventDefault();
+				rows.forEach((r) => r.removeClass("radar-drag-over"));
+				if (dragSrcIndex !== null && dragSrcIndex !== i) {
+					onReorder(dragSrcIndex, i);
+				}
+			});
+		});
 	}
 
 	private redistributePriorityRadii(): void {

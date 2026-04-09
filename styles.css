@@ -108,6 +108,24 @@
 	dominant-baseline: middle;
 }
 
+/* Customize modal drag-and-drop */
+.radar-drag-handle {
+	cursor: grab;
+	opacity: 0.4;
+}
+
+.radar-drag-handle:hover {
+	opacity: 1;
+}
+
+.radar-drag-source {
+	opacity: 0.4;
+}
+
+.radar-drag-over {
+	box-shadow: 0 -2px 0 0 var(--interactive-accent);
+}
+
 /* Blips */
 .radar-blip {
 	cursor: grab;
