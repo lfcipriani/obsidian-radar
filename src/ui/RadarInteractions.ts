@@ -9,6 +9,7 @@ import { cartesianToPolar, clamp } from "../utils/polarCoordinates";
 export interface RadarInteractionsOptions {
 	onBlipMove: (blipId: string, r: number, theta: number) => void;
 	onBlipClick: (blipId: string, event: MouseEvent | TouchEvent) => void;
+	onRadarContextMenu: (event: MouseEvent) => void;
 	onZoomChange: (zoom: number) => void;
 	onPanChange: (panX: number, panY: number) => void;
 }
@@ -334,12 +335,13 @@ export class RadarInteractions {
 		const blipGroup = target.closest(".radar-blip");
 		const blipId = blipGroup?.getAttribute("data-blip-id");
 
-		if (!blipId) {
-			return;
-		}
-
 		e.preventDefault();
-		this.options.onBlipClick(blipId, e);
+
+		if (blipId) {
+			this.options.onBlipClick(blipId, e);
+		} else {
+			this.options.onRadarContextMenu(e);
+		}
 	}
 
 	/**

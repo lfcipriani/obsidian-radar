@@ -144,6 +144,7 @@ export class RadarView extends TextFileView {
 			{
 				onBlipMove: (blipId, r, theta) => this.onBlipMove(blipId, r, theta),
 				onBlipClick: (blipId, event) => this.onBlipClick(blipId, event),
+				onRadarContextMenu: (event) => this.onRadarContextMenu(event),
 				onZoomChange: (zoom) => this.onZoomChange(zoom),
 				onPanChange: (panX, panY) => this.onPanChange(panX, panY),
 			}
@@ -198,6 +199,46 @@ export class RadarView extends TextFileView {
 				menu.showAtPosition({ x: touch.clientX, y: touch.clientY });
 			}
 		}
+	}
+
+	/**
+	 * Handle right-click on the radar background (not on a blip)
+	 */
+	private onRadarContextMenu(event: MouseEvent): void {
+		const menu = new Menu();
+
+		menu.addItem((item) =>
+			item
+				.setTitle("Add note blip")
+				.setIcon("file-plus")
+				.onClick(() => this.openAddNoteModal())
+		);
+		menu.addItem((item) =>
+			item
+				.setTitle("Add text blip")
+				.setIcon("type-outline")
+				.onClick(() => this.openAddTextModal())
+		);
+
+		menu.addSeparator();
+
+		menu.addItem((item) =>
+			item
+				.setTitle("Reset zoom")
+				.setIcon("maximize")
+				.onClick(() => this.resetZoom())
+		);
+
+		menu.addSeparator();
+
+		menu.addItem((item) =>
+			item
+				.setTitle("Customize")
+				.setIcon("settings")
+				.onClick(() => this.openCustomizeModal())
+		);
+
+		menu.showAtMouseEvent(event);
 	}
 
 	/**
