@@ -113,8 +113,7 @@ export class RadarRenderer {
 			if (sweepAngle <= 0) sweepAngle += 360;
 
 			const path = this.buildArcPath(center, center, maxRadius, cat.startAngle, sweepAngle);
-			path.style.fill = cat.color;
-			path.style.fillOpacity = "0.12";
+			path.setCssProps({ fill: cat.color, "fill-opacity": "0.12" });
 			path.setAttribute("class", "radar-category-segment");
 			this.segmentsGroup.appendChild(path);
 		}
