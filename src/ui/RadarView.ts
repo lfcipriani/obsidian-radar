@@ -19,6 +19,7 @@ export class RadarView extends TextFileView {
 	private radarData: RadarData | null = null;
 	private viewState: ViewState = { ...DEFAULT_VIEW_STATE };
 	private titlesVisible = true;
+	private glowVisible = true;
 	private renderer: RadarRenderer | null = null;
 	private toolbar: RadarToolbar | null = null;
 	private interactions: RadarInteractions | null = null;
@@ -117,6 +118,11 @@ export class RadarView extends TextFileView {
 				this.toolbar?.setTitlesVisible(this.titlesVisible);
 				this.renderer?.setTitlesVisible(this.titlesVisible);
 			},
+			onToggleGlow: () => {
+				this.glowVisible = !this.glowVisible;
+				this.toolbar?.setGlowVisible(this.glowVisible);
+				this.renderer?.setGlowVisible(this.glowVisible);
+			},
 			onZoomIn: () => this.zoomIn(),
 			onZoomOut: () => this.zoomOut(),
 			onResetZoom: () => this.resetZoom(),
@@ -171,6 +177,7 @@ export class RadarView extends TextFileView {
 		this.interactions.setZoom(this.viewState.zoom);
 		this.interactions.setPan(this.viewState.panX, this.viewState.panY);
 		this.renderer.setTitlesVisible(this.titlesVisible);
+		this.renderer.setGlowVisible(this.glowVisible);
 	}
 
 	/**
@@ -380,6 +387,12 @@ export class RadarView extends TextFileView {
 			onBlipRadiusChanged: (blipRadius) => {
 				if (!this.radarData) return;
 				this.plugin.radarStore.setBlipRadius(this.radarData, blipRadius);
+				this.renderer?.updateData(this.radarData);
+				this.requestSave();
+			},
+			onBlipColorChanged: (color) => {
+				if (!this.radarData) return;
+				this.plugin.radarStore.setBlipColor(this.radarData, color);
 				this.renderer?.updateData(this.radarData);
 				this.requestSave();
 			},

@@ -28,12 +28,14 @@ export interface CustomizeRadarModalOptions {
 	onPrioritiesChanged: (levels: PriorityLevel[]) => void;
 	onCategoriesChanged: (categories: Category[]) => void;
 	onBlipRadiusChanged: (blipRadius: number) => void;
+	onBlipColorChanged: (color: string | undefined) => void;
 }
 
 export class CustomizeRadarModal extends Modal {
 	private priorities: PriorityLevel[];
 	private categories: Category[];
 	private blipRadius: number;
+	private blipColor: string | undefined;
 	private options: CustomizeRadarModalOptions;
 
 	constructor(
@@ -46,6 +48,7 @@ export class CustomizeRadarModal extends Modal {
 		this.priorities = radarData.priorityLevels.map((p) => ({ ...p }));
 		this.categories = radarData.categories.map((c) => ({ ...c }));
 		this.blipRadius = radarData.blipRadius;
+		this.blipColor = radarData.blipColor;
 		this.options = options;
 	}
 
@@ -188,7 +191,15 @@ export class CustomizeRadarModal extends Modal {
 
 			// Insert color swatches before the reset button
 			const swatchContainer = s.controlEl.createEl("div", { cls: "radar-color-swatches" });
-			this.fillColorSwatches(swatchContainer, category);
+			this.fillColorSwatches(
+				swatchContainer,
+				category.color,
+				(color) => {
+					category.color = color;
+					this.options.onCategoriesChanged([...this.categories]);
+				},
+				() => this.refresh()
+			);
 			if (resetBtnEl) {
 				s.controlEl.insertBefore(swatchContainer, resetBtnEl);
 			}
@@ -237,21 +248,55 @@ export class CustomizeRadarModal extends Modal {
 						this.options.onBlipRadiusChanged(value);
 					})
 			);
+
+		let resetBtnEl: HTMLElement | null = null;
+		const colorSetting = new Setting(container)
+			.setName("Blip color")
+			.setDesc("Default color for all blips (uses accent color when unset)")
+			.addExtraButton((btn) => {
+				resetBtnEl = btn.extraSettingsEl;
+				btn
+					.setIcon("rotate-ccw")
+					.setTooltip("Reset to accent color")
+					.onClick(() => {
+						this.blipColor = undefined;
+						this.options.onBlipColorChanged(undefined);
+						this.refresh();
+					});
+			});
+
+		const swatchContainer = colorSetting.controlEl.createEl("div", { cls: "radar-color-swatches" });
+		this.fillColorSwatches(
+			swatchContainer,
+			this.blipColor,
+			(color) => {
+				this.blipColor = color;
+				this.options.onBlipColorChanged(color);
+			},
+			() => this.refresh()
+		);
+		if (resetBtnEl) {
+			colorSetting.controlEl.insertBefore(swatchContainer, resetBtnEl);
+		}
 	}
 
-	private fillColorSwatches(container: HTMLElement, category: Category): void {
-		const isCustom = category.color !== undefined && !category.color.startsWith("var(");
+	private fillColorSwatches(
+		container: HTMLElement,
+		currentColor: string | undefined,
+		onChange: (color: string) => void,
+		onCommit: () => void
+	): void {
+		const isCustom = currentColor !== undefined && !currentColor.startsWith("var(");
 
 		for (const colorVar of PRESET_COLORS) {
 			const swatch = container.createEl("div", { cls: "radar-color-swatch" });
 			swatch.style.background = colorVar;
-			if (category.color === colorVar) {
+			if (currentColor === colorVar) {
 				swatch.addClass("radar-color-swatch--selected");
 			}
 			swatch.addEventListener("click", () => {
-				category.color = colorVar;
-				this.options.onCategoriesChanged([...this.categories]);
-				this.refresh();
+				onChange(colorVar);
+				onCommit();
 			});
 		}
 
@@ -265,16 +310,15 @@ export class CustomizeRadarModal extends Modal {
 			cls: "radar-color-swatch-input",
 			attr: { type: "color" },
 		});
-		if (isCustom && category.color) {
-			colorInput.value = category.color;
+		if (isCustom && currentColor) {
+			colorInput.value = currentColor;
 		}
 
 		colorInput.addEventListener("input", (e) => {
-			category.color = (e.target as HTMLInputElement).value;
-			this.options.onCategoriesChanged([...this.categories]);
+			onChange((e.target as HTMLInputElement).value);
 		});
 		colorInput.addEventListener("change", () => {
-			this.refresh();
+			onCommit();
 		});
 
 		customSwatch.addEventListener("click", (e) => {

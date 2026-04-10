@@ -296,20 +296,17 @@ export class RadarRenderer {
 			transform: `translate(${pos.x},${pos.y})`,
 		});
 
-		// Create flare (glow halo behind the dot)
-		const flare = createCircle(0, 0, blipRadius * 2, "radar-blip-flare");
-		if (blip.color) {
-			flare.style.fill = blip.color;
-		}
-
 		// Create dot — solid for notes, hollow ring for text blips
 		const isText = blip.type === "text";
 		const dot = createCircle(0, 0, blipRadius, isText ? "radar-blip-dot radar-blip-dot--text" : "radar-blip-dot");
-		if (blip.color) {
+
+		// Apply color: per-blip override, then radar default, then CSS accent fallback
+		const effectiveColor = blip.color ?? this.radarData.blipColor;
+		if (effectiveColor) {
 			if (isText) {
-				dot.style.stroke = blip.color;
+				dot.style.stroke = effectiveColor;
 			} else {
-				dot.style.fill = blip.color;
+				dot.style.fill = effectiveColor;
 			}
 		}
 
@@ -321,6 +318,12 @@ export class RadarRenderer {
 			isTruncated ? blip.title.slice(0, RadarRenderer.maxBlipTitleLength) + "…" : blip.title,
 			isTruncated ? "radar-blip-title radar-blip-title--short" : "radar-blip-title"
 		);
+
+		// Glow halo behind the dot
+		const flare = createCircle(0, 0, blipRadius * 2, "radar-blip-flare");
+		if (effectiveColor) {
+			flare.style.fill = effectiveColor;
+		}
 
 		blipGroup.appendChild(flare);
 		blipGroup.appendChild(dot);
@@ -438,6 +441,17 @@ export class RadarRenderer {
 			this.blipsGroup.removeClass("radar-titles-hidden");
 		} else {
 			this.blipsGroup.addClass("radar-titles-hidden");
+		}
+	}
+
+	/**
+	 * Show or hide the glow halo on all blips
+	 */
+	setGlowVisible(visible: boolean): void {
+		if (visible) {
+			this.blipsGroup.removeClass("radar-glow-hidden");
+		} else {
+			this.blipsGroup.addClass("radar-glow-hidden");
 		}
 	}
 

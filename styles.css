@@ -204,6 +204,11 @@
 	display: block;
 }
 
+/* Glow hidden mode */
+.radar-glow-hidden .radar-blip-flare {
+	display: none;
+}
+
 /* Titles hidden mode: hide all, reveal on hover (full if truncated, plain otherwise) */
 .radar-titles-hidden .radar-blip-title {
 	display: none;

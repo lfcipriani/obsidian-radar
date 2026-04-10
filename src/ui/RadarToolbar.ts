@@ -10,6 +10,7 @@ export interface RadarToolbarOptions {
 	onAddText: () => void;
 	onCustomize: () => void;
 	onToggleTitles: () => void;
+	onToggleGlow: () => void;
 	onZoomIn: () => void;
 	onZoomOut: () => void;
 	onResetZoom: () => void;
@@ -18,6 +19,7 @@ export interface RadarToolbarOptions {
 export class RadarToolbar {
 	private container: HTMLElement;
 	private titlesBtn: HTMLButtonElement | null = null;
+	private glowBtn: HTMLButtonElement | null = null;
 
 	constructor(container: HTMLElement, options: RadarToolbarOptions) {
 		this.container = container;
@@ -38,16 +40,29 @@ export class RadarToolbar {
 		this.addButton(zoomGroup, "maximize", "Reset zoom", options.onResetZoom);
 		this.addButton(zoomGroup, "minus", "Zoom out", options.onZoomOut);
 
-		// Settings group: customize, toggle titles
+		// Design group: toggle titles, toggle glow
+		const designGroup = this.container.createDiv({ cls: "radar-controls-group" });
+		this.titlesBtn = this.addButton(designGroup, "eye-off", "Hide titles", options.onToggleTitles);
+		this.glowBtn = this.addButton(designGroup, "star-off", "Disable glow", options.onToggleGlow);
+
+		// Settings group: customize
 		const settingsGroup = this.container.createDiv({ cls: "radar-controls-group" });
 		this.addButton(settingsGroup, "settings", "Customize", options.onCustomize);
-		this.titlesBtn = this.addButton(settingsGroup, "eye-off", "Hide titles", options.onToggleTitles);
 	}
 
 	setTitlesVisible(visible: boolean): void {
 		if (!this.titlesBtn) return;
 		setIcon(this.titlesBtn, visible ? "eye-off" : "eye");
 		setTooltip(this.titlesBtn, visible ? "Hide titles" : "Show titles", {
+			placement: "left",
+			delay: 500,
+		});
+	}
+
+	setGlowVisible(visible: boolean): void {
+		if (!this.glowBtn) return;
+		setIcon(this.glowBtn, visible ? "star-off" : "star");
+		setTooltip(this.glowBtn, visible ? "Disable glow" : "Enable glow", {
 			placement: "left",
 			delay: 500,
 		});

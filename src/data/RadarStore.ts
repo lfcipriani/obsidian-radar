@@ -66,6 +66,7 @@ export class RadarStore {
 			priorityLevels: data.priorityLevels ?? [...DEFAULT_PRIORITIES],
 			categories: data.categories ?? [...DEFAULT_CATEGORIES],
 			blipRadius: this.normalizeBlipRadius(data.blipRadius),
+			blipColor: data.blipColor,
 			blips: data.blips ?? [],
 		};
 	}
@@ -132,6 +133,13 @@ export class RadarStore {
 	 */
 	setBlipRadius(radar: RadarData, blipRadius: number): void {
 		radar.blipRadius = this.normalizeBlipRadius(blipRadius);
+	}
+
+	/**
+	 * Update the radar's default blip color
+	 */
+	setBlipColor(radar: RadarData, color: string | undefined): void {
+		radar.blipColor = color;
 	}
 
 	private normalizeBlipRadius(blipRadius: number | undefined): number {
