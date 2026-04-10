@@ -302,10 +302,15 @@ export class RadarRenderer {
 			flare.style.fill = blip.color;
 		}
 
-		// Create solid dot
-		const dot = createCircle(0, 0, blipRadius, "radar-blip-dot");
+		// Create dot — solid for notes, hollow ring for text blips
+		const isText = blip.type === "text";
+		const dot = createCircle(0, 0, blipRadius, isText ? "radar-blip-dot radar-blip-dot--text" : "radar-blip-dot");
 		if (blip.color) {
-			dot.style.fill = blip.color;
+			if (isText) {
+				dot.style.stroke = blip.color;
+			} else {
+				dot.style.fill = blip.color;
+			}
 		}
 
 		// Create blip title (cleared above the flare)

@@ -150,6 +150,13 @@
 	transform-box: fill-box;
 }
 
+.radar-blip-dot--text {
+	fill: none;
+	stroke: var(--interactive-accent);
+	stroke-width: 1.5;
+	pointer-events: all;
+}
+
 .radar-blip:hover .radar-blip-flare {
 	opacity: 0.5;
 }
