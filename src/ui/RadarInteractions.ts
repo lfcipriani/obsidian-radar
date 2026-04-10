@@ -325,6 +325,9 @@ export class RadarInteractions {
 				const clampedY = clamp(coords.y, -SVG_CONFIG.center, SVG_CONFIG.center);
 				const polar = cartesianToPolar(clampedX, clampedY, SVG_CONFIG.maxRadius);
 				this.options.onBlipMove(blipId, polar.r, polar.theta);
+			} else if (event.metaKey || event.ctrlKey) {
+				// Modifier+click - trigger click callback for special handling
+				this.options.onBlipClick(blipId, event);
 			}
 		}
 

@@ -187,6 +187,14 @@ export class RadarView extends TextFileView {
 		const blip = this.radarData?.blips.find((b) => b.id === blipId);
 		if (!blip) return;
 
+		// Command+click (macOS) or Ctrl+click (Win/Linux) on a note blip → open in new tab
+		if (event instanceof MouseEvent && (event.metaKey || event.ctrlKey)) {
+			if (blip.type === "note" && blip.notePath) {
+				void this.app.workspace.openLinkText(blip.notePath, "", "tab");
+			}
+			return;
+		}
+
 		const menu = new Menu();
 
 		// If it's a note blip, offer to open the note
