@@ -182,6 +182,55 @@
 	pointer-events: none;
 }
 
+/* Category color swatches */
+.radar-color-swatches {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	padding: 0 6px;
+}
+
+.radar-color-swatch {
+	width: 18px;
+	height: 18px;
+	border-radius: 50%;
+	cursor: pointer;
+	flex-shrink: 0;
+	position: relative;
+	transition: transform 0.1s ease;
+}
+
+.radar-color-swatch:hover {
+	transform: scale(1.2);
+}
+
+.radar-color-swatch--selected {
+	outline: 2px solid var(--text-normal);
+	outline-offset: 2px;
+}
+
+.radar-color-swatch--custom {
+	background: conic-gradient(
+		hsl(0, 80%, 55%),
+		hsl(60, 80%, 55%),
+		hsl(120, 80%, 55%),
+		hsl(180, 80%, 55%),
+		hsl(240, 80%, 55%),
+		hsl(300, 80%, 55%),
+		hsl(360, 80%, 55%)
+	);
+}
+
+.radar-color-swatch-input {
+	position: absolute;
+	width: 0;
+	height: 0;
+	opacity: 0;
+	pointer-events: none;
+	top: 0;
+	left: 0;
+}
+
 /* Customize modal */
 .radar-modal-section-desc {
 	font-size: var(--font-ui-small);

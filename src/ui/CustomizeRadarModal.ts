@@ -10,6 +10,16 @@ import { MAX_BLIP_RADIUS, MIN_BLIP_RADIUS } from "../constants";
 
 const MAX_PRIORITY_LEVELS = 8;
 const MAX_CATEGORIES = 8;
+
+const PRESET_COLORS = [
+	"var(--color-red)",
+	"var(--color-orange)",
+	"var(--color-yellow)",
+	"var(--color-green)",
+	"var(--color-cyan)",
+	"var(--color-blue)",
+	"var(--color-purple)",
+];
 const MAX_CATEGORY_NAME_LENGTH = 35;
 const MIN_PRIORITY_LEVELS = 1;
 const MIN_CATEGORIES = 3;
@@ -129,6 +139,8 @@ export class CustomizeRadarModal extends Modal {
 		const rows: HTMLElement[] = [];
 
 		for (const category of this.categories) {
+			let resetBtnEl: HTMLElement | null = null;
+
 			const s = new Setting(container)
 				.addExtraButton((btn) => {
 					btn.setIcon("grip-vertical").setTooltip("Drag to reorder");
@@ -150,14 +162,8 @@ export class CustomizeRadarModal extends Modal {
 							this.options.onCategoriesChanged([...this.categories]);
 						})
 				)
-				.addColorPicker((picker) => {
-					if (category.color) picker.setValue(category.color);
-					picker.onChange((value) => {
-						category.color = value;
-						this.options.onCategoriesChanged([...this.categories]);
-					});
-				})
-				.addExtraButton((btn) =>
+				.addExtraButton((btn) => {
+					resetBtnEl = btn.extraSettingsEl;
 					btn
 						.setIcon("rotate-ccw")
 						.setTooltip("Clear category color")
@@ -165,8 +171,8 @@ export class CustomizeRadarModal extends Modal {
 							delete category.color;
 							this.options.onCategoriesChanged([...this.categories]);
 							this.refresh();
-						})
-				)
+						});
+				})
 				.addExtraButton((btn) =>
 					btn
 						.setIcon("trash")
@@ -179,6 +185,14 @@ export class CustomizeRadarModal extends Modal {
 							this.refresh();
 						})
 				);
+
+			// Insert color swatches before the reset button
+			const swatchContainer = s.controlEl.createEl("div", { cls: "radar-color-swatches" });
+			this.fillColorSwatches(swatchContainer, category);
+			if (resetBtnEl) {
+				s.controlEl.insertBefore(swatchContainer, resetBtnEl);
+			}
+
 			rows.push(s.settingEl);
 		}
 
@@ -223,6 +237,49 @@ export class CustomizeRadarModal extends Modal {
 						this.options.onBlipRadiusChanged(value);
 					})
 			);
+	}
+
+	private fillColorSwatches(container: HTMLElement, category: Category): void {
+		const isCustom = category.color !== undefined && !category.color.startsWith("var(");
+
+		for (const colorVar of PRESET_COLORS) {
+			const swatch = container.createEl("div", { cls: "radar-color-swatch" });
+			swatch.style.background = colorVar;
+			if (category.color === colorVar) {
+				swatch.addClass("radar-color-swatch--selected");
+			}
+			swatch.addEventListener("click", () => {
+				category.color = colorVar;
+				this.options.onCategoriesChanged([...this.categories]);
+				this.refresh();
+			});
+		}
+
+		// Custom color swatch — opens native color picker
+		const customSwatch = container.createEl("div", { cls: "radar-color-swatch radar-color-swatch--custom" });
+		if (isCustom) {
+			customSwatch.addClass("radar-color-swatch--selected");
+		}
+
+		const colorInput = customSwatch.createEl("input", {
+			cls: "radar-color-swatch-input",
+			attr: { type: "color" },
+		});
+		if (isCustom && category.color) {
+			colorInput.value = category.color;
+		}
+
+		colorInput.addEventListener("input", (e) => {
+			category.color = (e.target as HTMLInputElement).value;
+			this.options.onCategoriesChanged([...this.categories]);
+		});
+		colorInput.addEventListener("change", () => {
+			this.refresh();
+		});
+
+		customSwatch.addEventListener("click", (e) => {
+			if (e.target !== colorInput) colorInput.click();
+		});
 	}
 
 	private setupDragAndDrop(rows: HTMLElement[], onReorder: (from: number, to: number) => void): void {
