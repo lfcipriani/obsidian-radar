@@ -9,6 +9,7 @@ export interface RadarToolbarOptions {
 	onAddNote: () => void;
 	onAddText: () => void;
 	onCustomize: () => void;
+	onToggleTitles: () => void;
 	onZoomIn: () => void;
 	onZoomOut: () => void;
 	onResetZoom: () => void;
@@ -16,6 +17,7 @@ export interface RadarToolbarOptions {
 
 export class RadarToolbar {
 	private container: HTMLElement;
+	private titlesBtn: HTMLButtonElement | null = null;
 
 	constructor(container: HTMLElement, options: RadarToolbarOptions) {
 		this.container = container;
@@ -25,7 +27,7 @@ export class RadarToolbar {
 	private render(options: RadarToolbarOptions): void {
 		this.container.empty();
 
-		// Action group: add note, add text, customize
+		// Action group: add note, add text
 		const actionGroup = this.container.createDiv({ cls: "radar-controls-group" });
 		this.addButton(actionGroup, "file-plus", "Add note blip", options.onAddNote);
 		this.addButton(actionGroup, "type-outline", "Add text blip", options.onAddText);
@@ -36,9 +38,19 @@ export class RadarToolbar {
 		this.addButton(zoomGroup, "maximize", "Reset zoom", options.onResetZoom);
 		this.addButton(zoomGroup, "minus", "Zoom out", options.onZoomOut);
 
-		// Action group: customize
-		const customizeGroup = this.container.createDiv({ cls: "radar-controls-group" });
-		this.addButton(customizeGroup, "settings", "Customize", options.onCustomize);
+		// Settings group: customize, toggle titles
+		const settingsGroup = this.container.createDiv({ cls: "radar-controls-group" });
+		this.addButton(settingsGroup, "settings", "Customize", options.onCustomize);
+		this.titlesBtn = this.addButton(settingsGroup, "eye-off", "Hide titles", options.onToggleTitles);
+	}
+
+	setTitlesVisible(visible: boolean): void {
+		if (!this.titlesBtn) return;
+		setIcon(this.titlesBtn, visible ? "eye-off" : "eye");
+		setTooltip(this.titlesBtn, visible ? "Hide titles" : "Show titles", {
+			placement: "left",
+			delay: 500,
+		});
 	}
 
 	private addButton(
@@ -46,10 +58,11 @@ export class RadarToolbar {
 		icon: string,
 		tooltip: string,
 		onClick: () => void
-	): void {
+	): HTMLButtonElement {
 		const btn = group.createEl("button", { cls: "radar-control-btn" });
 		setIcon(btn, icon);
 		setTooltip(btn, tooltip, { placement: "left", delay: 500 });
 		btn.addEventListener("click", onClick);
+		return btn;
 	}
 }

@@ -18,6 +18,7 @@ import {
 
 export class RadarRenderer {
 	private static readonly categoryLabelRadiusOffset = 28;
+	private static readonly maxBlipTitleLength = 15;
 
 	private svg: SVGSVGElement;
 	private backgroundGroup: SVGGElement;
@@ -312,12 +313,23 @@ export class RadarRenderer {
 			}
 		}
 
-		// Create blip title (cleared above the flare)
-		const title = createText(0, -blipRadius * 2 - 4, blip.title, "radar-blip-title");
+		// Create blip title — truncated by default, expands to full on hover via CSS
+		const titleY = -blipRadius * 2 - 4;
+		const isTruncated = blip.title.length > RadarRenderer.maxBlipTitleLength;
+		const shortTitle = createText(
+			0, titleY,
+			isTruncated ? blip.title.slice(0, RadarRenderer.maxBlipTitleLength) + "…" : blip.title,
+			isTruncated ? "radar-blip-title radar-blip-title--short" : "radar-blip-title"
+		);
 
 		blipGroup.appendChild(flare);
 		blipGroup.appendChild(dot);
-		blipGroup.appendChild(title);
+		blipGroup.appendChild(shortTitle);
+
+		if (isTruncated) {
+			const fullTitle = createText(0, titleY, blip.title, "radar-blip-title radar-blip-title--full");
+			blipGroup.appendChild(fullTitle);
+		}
 
 		this.blipsGroup.appendChild(blipGroup);
 	}
@@ -416,6 +428,17 @@ export class RadarRenderer {
 	 */
 	getBlipsGroup(): SVGGElement {
 		return this.blipsGroup;
+	}
+
+	/**
+	 * Show or hide blip titles (titles still appear on hover when hidden)
+	 */
+	setTitlesVisible(visible: boolean): void {
+		if (visible) {
+			this.blipsGroup.removeClass("radar-titles-hidden");
+		} else {
+			this.blipsGroup.addClass("radar-titles-hidden");
+		}
 	}
 
 	/**

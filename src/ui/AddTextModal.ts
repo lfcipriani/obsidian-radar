@@ -22,13 +22,20 @@ export class AddTextModal extends Modal {
 		new Setting(contentEl)
 			.setName("Title")
 			.setDesc("Enter the text to display on the radar")
-			.addText((text) =>
+			.addText((text) => {
 				text
 					.setPlaceholder("Enter text...")
 					.onChange((value) => {
 						this.title = value;
-					})
-			);
+					});
+				text.inputEl.addEventListener("keydown", (e) => {
+					if (e.key === "Enter" && this.title.trim()) {
+						e.preventDefault();
+						this.close();
+						this.onSubmit(this.title.trim());
+					}
+				});
+			});
 
 		new Setting(contentEl)
 			.addButton((btn) =>

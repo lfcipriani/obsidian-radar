@@ -192,6 +192,27 @@
 	user-select: none;
 }
 
+.radar-blip-title--full {
+	display: none;
+}
+
+.radar-blip:hover .radar-blip-title--short {
+	display: none;
+}
+
+.radar-blip:hover .radar-blip-title--full {
+	display: block;
+}
+
+/* Titles hidden mode: hide all, reveal on hover (full if truncated, plain otherwise) */
+.radar-titles-hidden .radar-blip-title {
+	display: none;
+}
+
+.radar-titles-hidden .radar-blip:hover .radar-blip-title:not(.radar-blip-title--short) {
+	display: block;
+}
+
 /* Category segment fills */
 .radar-category-segment {
 	pointer-events: none;

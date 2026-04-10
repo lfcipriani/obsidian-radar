@@ -18,6 +18,7 @@ export class RadarView extends TextFileView {
 	private plugin: RadarPlugin;
 	private radarData: RadarData | null = null;
 	private viewState: ViewState = { ...DEFAULT_VIEW_STATE };
+	private titlesVisible = true;
 	private renderer: RadarRenderer | null = null;
 	private toolbar: RadarToolbar | null = null;
 	private interactions: RadarInteractions | null = null;
@@ -111,6 +112,11 @@ export class RadarView extends TextFileView {
 				this.openAddTextModal(pos?.r, pos?.theta);
 			},
 			onCustomize: () => this.openCustomizeModal(),
+			onToggleTitles: () => {
+				this.titlesVisible = !this.titlesVisible;
+				this.toolbar?.setTitlesVisible(this.titlesVisible);
+				this.renderer?.setTitlesVisible(this.titlesVisible);
+			},
 			onZoomIn: () => this.zoomIn(),
 			onZoomOut: () => this.zoomOut(),
 			onResetZoom: () => this.resetZoom(),
@@ -164,6 +170,7 @@ export class RadarView extends TextFileView {
 		);
 		this.interactions.setZoom(this.viewState.zoom);
 		this.interactions.setPan(this.viewState.panX, this.viewState.panY);
+		this.renderer.setTitlesVisible(this.titlesVisible);
 	}
 
 	/**
