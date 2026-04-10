@@ -76,6 +76,15 @@
 	cursor: grabbing;
 }
 
+.radar-svg-container.drag-over::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border: 2px dashed var(--interactive-accent);
+	border-radius: var(--radius-s);
+	pointer-events: none;
+}
+
 .radar-svg-container.panning .radar-svg,
 .radar-svg.panning {
 	transition: none; /* Disable transition during pan for responsiveness */

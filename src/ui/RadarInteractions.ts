@@ -10,6 +10,7 @@ export interface RadarInteractionsOptions {
 	onBlipMove: (blipId: string, r: number, theta: number) => void;
 	onBlipClick: (blipId: string, event: MouseEvent | TouchEvent) => void;
 	onRadarContextMenu: (event: MouseEvent) => void;
+	onFileDrop: (event: DragEvent, r: number, theta: number) => void;
 	onZoomChange: (zoom: number) => void;
 	onPanChange: (panX: number, panY: number) => void;
 }
@@ -48,6 +49,10 @@ export class RadarInteractions {
 	private boundMouseDown: (e: MouseEvent) => void;
 	private boundTouchStart: (e: TouchEvent) => void;
 	private boundContextMenu: (e: MouseEvent) => void;
+	private boundDragEnter: (e: DragEvent) => void;
+	private boundDragOver: (e: DragEvent) => void;
+	private boundDragLeave: (e: DragEvent) => void;
+	private boundDrop: (e: DragEvent) => void;
 
 	constructor(
 		eventSurface: HTMLElement,
@@ -69,6 +74,10 @@ export class RadarInteractions {
 		this.boundMouseDown = this.onSvgMouseDown.bind(this);
 		this.boundTouchStart = this.onSvgTouchStart.bind(this);
 		this.boundContextMenu = this.onContextMenu.bind(this);
+		this.boundDragEnter = this.onDragEnter.bind(this);
+		this.boundDragOver = this.onDragOver.bind(this);
+		this.boundDragLeave = this.onDragLeave.bind(this);
+		this.boundDrop = this.onDrop.bind(this);
 
 		this.setupEventListeners();
 	}
@@ -91,6 +100,10 @@ export class RadarInteractions {
 			capture: true,
 		});
 		this.eventSurface.addEventListener("contextmenu", this.boundContextMenu);
+		this.eventSurface.addEventListener("dragenter", this.boundDragEnter);
+		this.eventSurface.addEventListener("dragover", this.boundDragOver);
+		this.eventSurface.addEventListener("dragleave", this.boundDragLeave);
+		this.eventSurface.addEventListener("drop", this.boundDrop);
 	}
 
 	/**
@@ -394,6 +407,41 @@ export class RadarInteractions {
 	}
 
 	/**
+	 * File drag-and-drop from the file explorer
+	 */
+	private onDragEnter(e: DragEvent): void {
+		if (e.dataTransfer?.types.includes("text/plain")) {
+			e.preventDefault();
+			this.eventSurface.addClass("drag-over");
+		}
+	}
+
+	private onDragOver(e: DragEvent): void {
+		if (e.dataTransfer?.types.includes("text/plain")) {
+			e.preventDefault();
+		}
+	}
+
+	private onDragLeave(e: DragEvent): void {
+		// Only clear when leaving the surface itself, not a child element
+		if (!this.eventSurface.contains(e.relatedTarget as Node)) {
+			this.eventSurface.removeClass("drag-over");
+		}
+	}
+
+	private onDrop(e: DragEvent): void {
+		e.preventDefault();
+		this.eventSurface.removeClass("drag-over");
+
+		const coords = this.getSvgCoordinates(e.clientX, e.clientY);
+		const clampedX = clamp(coords.x, -SVG_CONFIG.center, SVG_CONFIG.center);
+		const clampedY = clamp(coords.y, -SVG_CONFIG.center, SVG_CONFIG.center);
+		const polar = cartesianToPolar(clampedX, clampedY, SVG_CONFIG.maxRadius);
+
+		this.options.onFileDrop(e, polar.r, polar.theta);
+	}
+
+	/**
 	 * Clean up event listeners
 	 */
 	destroy(): void {
@@ -405,5 +453,9 @@ export class RadarInteractions {
 		document.removeEventListener("touchmove", this.boundTouchMove);
 		document.removeEventListener("touchend", this.boundTouchEnd);
 		document.removeEventListener("wheel", this.boundWheel, true);
+		this.eventSurface.removeEventListener("dragenter", this.boundDragEnter);
+		this.eventSurface.removeEventListener("dragover", this.boundDragOver);
+		this.eventSurface.removeEventListener("dragleave", this.boundDragLeave);
+		this.eventSurface.removeEventListener("drop", this.boundDrop);
 	}
 }

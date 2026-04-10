@@ -3,7 +3,7 @@
  * TextFileView subclass for displaying and interacting with a radar
  */
 
-import { TextFileView, WorkspaceLeaf, Menu } from "obsidian";
+import { TextFileView, WorkspaceLeaf, Menu, TFile } from "obsidian";
 import type RadarPlugin from "../main";
 import type { RadarData, Blip, ViewState } from "../types";
 import { VIEW_TYPE_RADAR, SVG_CONFIG, DEFAULT_VIEW_STATE } from "../constants";
@@ -145,6 +145,7 @@ export class RadarView extends TextFileView {
 				onBlipMove: (blipId, r, theta) => this.onBlipMove(blipId, r, theta),
 				onBlipClick: (blipId, event) => this.onBlipClick(blipId, event),
 				onRadarContextMenu: (event) => this.onRadarContextMenu(event),
+				onFileDrop: (event, r, theta) => this.onFileDrop(event, r, theta),
 				onZoomChange: (zoom) => this.onZoomChange(zoom),
 				onPanChange: (panX, panY) => this.onPanChange(panX, panY),
 			}
@@ -239,6 +240,46 @@ export class RadarView extends TextFileView {
 		);
 
 		menu.showAtMouseEvent(event);
+	}
+
+	/**
+	 * Handle a file dropped from the file explorer onto the radar
+	 */
+	private onFileDrop(event: DragEvent, r: number, theta: number): void {
+		if (!this.radarData) return;
+
+		// Prefer Obsidian's internal drag manager (set when dragging from the file explorer).
+		// DragManager is not part of the public API so we use a minimal local interface.
+		interface ObsidianDragManager {
+			draggable: { type: string; file?: unknown } | null;
+		}
+		const appWithDrag = this.app as unknown as { dragManager: ObsidianDragManager };
+		const draggable = appWithDrag.dragManager?.draggable;
+
+		let file: TFile | null = null;
+
+		if (draggable?.type === "file" && draggable.file instanceof TFile) {
+			file = draggable.file;
+		} else {
+			// Fall back to dataTransfer text/plain which contains the file path
+			const path = event.dataTransfer?.getData("text/plain")?.trim();
+			if (path) {
+				const abstractFile = this.app.vault.getAbstractFileByPath(path);
+				if (abstractFile instanceof TFile) {
+					file = abstractFile;
+				}
+			}
+		}
+
+		if (!file) return;
+
+		this.addBlip({
+			type: "note",
+			title: file.basename,
+			notePath: file.path,
+			r,
+			theta,
+		});
 	}
 
 	/**
