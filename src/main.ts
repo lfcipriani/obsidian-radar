@@ -3,7 +3,7 @@
  * An Obsidian plugin for creating radar visualizations to track notes and items
  */
 
-import { Plugin, TFile, WorkspaceLeaf } from "obsidian";
+import { Plugin, TFile, TAbstractFile, WorkspaceLeaf } from "obsidian";
 import { RadarPluginSettings, DEFAULT_SETTINGS, RadarSettingTab } from "./settings";
 import { VIEW_TYPE_RADAR, RADAR_FILE_EXTENSION } from "./constants";
 import { RadarView } from "./ui/RadarView";
@@ -37,6 +37,13 @@ export default class RadarPlugin extends Plugin {
 			const { createRadarCommand } = await import("./commands/createRadar");
 			await createRadarCommand(this);
 		});
+
+		// Keep note blip references in sync when files are renamed or moved
+		this.registerEvent(
+			this.app.vault.on("rename", (file, oldPath) => {
+				this.handleFileRename(file, oldPath);
+			})
+		);
 
 		this.app.workspace.onLayoutReady(() => {
 			void this.refreshOpenRadarLeaves();
@@ -76,5 +83,55 @@ export default class RadarPlugin extends Plugin {
 	private getLeafFile(leaf: WorkspaceLeaf): TFile | null {
 		const view = leaf.view as { file?: TFile | null };
 		return view.file ?? null;
+	}
+
+	private handleFileRename(file: TAbstractFile, oldPath: string): void {
+		if (!(file instanceof TFile)) return;
+
+		const newPath = file.path;
+		const newBasename = file.basename;
+		const openRadarPaths = new Set<string>();
+
+		// Update all open radar views in memory
+		for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_RADAR)) {
+			const view = leaf.view as RadarView;
+			if (view.file?.path) openRadarPaths.add(view.file.path);
+			view.updateBlipPaths(oldPath, newPath, newBasename);
+		}
+
+		// Update all closed radar files on disk
+		void this.updateClosedRadarFiles(oldPath, newPath, newBasename, openRadarPaths);
+	}
+
+	private async updateClosedRadarFiles(
+		oldPath: string,
+		newPath: string,
+		newBasename: string,
+		skipPaths: Set<string>
+	): Promise<void> {
+		const oldBasename = oldPath.split("/").pop()?.replace(/\.[^/.]+$/, "") ?? "";
+
+		for (const file of this.radarStore.listRadarFiles()) {
+			if (skipPaths.has(file.path)) continue;
+
+			try {
+				const data = await this.radarStore.loadRadar(file);
+				let changed = false;
+
+				for (const blip of data.blips) {
+					if (blip.notePath === oldPath) {
+						blip.notePath = newPath;
+						if (blip.title === oldBasename) blip.title = newBasename;
+						changed = true;
+					}
+				}
+
+				if (changed) {
+					await this.radarStore.saveRadar(file, data);
+				}
+			} catch {
+				// Skip files that can't be read or parsed
+			}
+		}
 	}
 }

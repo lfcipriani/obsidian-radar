@@ -380,6 +380,30 @@ export class RadarView extends TextFileView {
 	}
 
 	/**
+	 * Update blip notePaths (and matching titles) when a vault file is renamed.
+	 * Called by the plugin's vault rename handler for open views.
+	 */
+	updateBlipPaths(oldPath: string, newPath: string, newBasename: string): void {
+		if (!this.radarData) return;
+
+		const oldBasename = oldPath.split("/").pop()?.replace(/\.[^/.]+$/, "") ?? "";
+		let changed = false;
+
+		for (const blip of this.radarData.blips) {
+			if (blip.notePath === oldPath) {
+				blip.notePath = newPath;
+				if (blip.title === oldBasename) blip.title = newBasename;
+				changed = true;
+			}
+		}
+
+		if (changed) {
+			this.renderer?.updateData(this.radarData);
+			this.requestSave();
+		}
+	}
+
+	/**
 	 * Add a blip to the radar
 	 */
 	private addBlip(blipData: Omit<Blip, "id">): void {
