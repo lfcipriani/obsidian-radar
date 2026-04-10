@@ -33,7 +33,7 @@ export default class RadarPlugin extends Plugin {
 		this.addSettingTab(new RadarSettingTab(this.app, this));
 
 		// Add ribbon icon for quick access
-		this.addRibbonIcon("target", "Create new radar", async () => {
+		this.addRibbonIcon("radar", "Create new radar", async () => {
 			const { createRadarCommand } = await import("./commands/createRadar");
 			await createRadarCommand(this);
 		});

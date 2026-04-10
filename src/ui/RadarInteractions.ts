@@ -392,6 +392,27 @@ export class RadarInteractions {
 	}
 
 	/**
+	 * Return the polar coordinates of the center of the currently visible area
+	 */
+	getViewCenter(): { r: number; theta: number } {
+		const rect = this.eventSurface.getBoundingClientRect();
+		return this.getRadarPosition(
+			rect.left + rect.width / 2,
+			rect.top + rect.height / 2
+		);
+	}
+
+	/**
+	 * Convert screen coordinates to radar polar coordinates
+	 */
+	getRadarPosition(clientX: number, clientY: number): { r: number; theta: number } {
+		const coords = this.getSvgCoordinates(clientX, clientY);
+		const clampedX = clamp(coords.x, -SVG_CONFIG.center, SVG_CONFIG.center);
+		const clampedY = clamp(coords.y, -SVG_CONFIG.center, SVG_CONFIG.center);
+		return cartesianToPolar(clampedX, clampedY, SVG_CONFIG.maxRadius);
+	}
+
+	/**
 	 * Set current zoom level (for syncing with external state)
 	 */
 	setZoom(zoom: number): void {

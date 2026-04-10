@@ -38,7 +38,7 @@ export class RadarView extends TextFileView {
 	}
 
 	getIcon(): string {
-		return "target";
+		return "radar";
 	}
 
 	/**
@@ -102,8 +102,14 @@ export class RadarView extends TextFileView {
 
 		// Create toolbar
 		this.toolbar = new RadarToolbar(toolbarContainer, {
-			onAddNote: () => this.openAddNoteModal(),
-			onAddText: () => this.openAddTextModal(),
+			onAddNote: () => {
+				const pos = this.interactions?.getViewCenter();
+				this.openAddNoteModal(pos?.r, pos?.theta);
+			},
+			onAddText: () => {
+				const pos = this.interactions?.getViewCenter();
+				this.openAddTextModal(pos?.r, pos?.theta);
+			},
 			onCustomize: () => this.openCustomizeModal(),
 			onZoomIn: () => this.zoomIn(),
 			onZoomOut: () => this.zoomOut(),
@@ -206,19 +212,20 @@ export class RadarView extends TextFileView {
 	 * Handle right-click on the radar background (not on a blip)
 	 */
 	private onRadarContextMenu(event: MouseEvent): void {
+		const pos = this.interactions?.getRadarPosition(event.clientX, event.clientY);
 		const menu = new Menu();
 
 		menu.addItem((item) =>
 			item
 				.setTitle("Add note blip")
 				.setIcon("file-plus")
-				.onClick(() => this.openAddNoteModal())
+				.onClick(() => this.openAddNoteModal(pos?.r, pos?.theta))
 		);
 		menu.addItem((item) =>
 			item
 				.setTitle("Add text blip")
 				.setIcon("type-outline")
-				.onClick(() => this.openAddTextModal())
+				.onClick(() => this.openAddTextModal(pos?.r, pos?.theta))
 		);
 
 		menu.addSeparator();
@@ -312,7 +319,7 @@ export class RadarView extends TextFileView {
 	/**
 	 * Open modal to add a note blip
 	 */
-	private openAddNoteModal(): void {
+	private openAddNoteModal(r?: number, theta?: number): void {
 		if (!this.radarData) return;
 
 		const modal = new AddBlipModal(this.app, (notePath, title) => {
@@ -320,8 +327,8 @@ export class RadarView extends TextFileView {
 				type: "note",
 				title,
 				notePath,
-				r: 0.5,
-				theta: Math.random() * 360,
+				r: r ?? 0.5,
+				theta: theta ?? Math.random() * 360,
 			});
 		});
 		modal.open();
@@ -330,15 +337,15 @@ export class RadarView extends TextFileView {
 	/**
 	 * Open modal to add a text blip
 	 */
-	private openAddTextModal(): void {
+	private openAddTextModal(r?: number, theta?: number): void {
 		if (!this.radarData) return;
 
 		const modal = new AddTextModal(this.app, (title) => {
 			this.addBlip({
 				type: "text",
 				title,
-				r: 0.5,
-				theta: Math.random() * 360,
+				r: r ?? 0.5,
+				theta: theta ?? Math.random() * 360,
 			});
 		});
 		modal.open();
