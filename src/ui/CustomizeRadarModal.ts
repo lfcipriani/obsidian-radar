@@ -61,6 +61,10 @@ export class CustomizeRadarModal extends Modal {
 
 	private renderPrioritiesSection(container: HTMLElement): void {
 		container.createEl("h3", { text: "Priority levels" });
+		container.createEl("p", {
+			text: "Concentric rings of the radar. The innermost ring is the highest priority; outer rings are lower.",
+			cls: "radar-modal-section-desc",
+		});
 
 		const rows: HTMLElement[] = [];
 
@@ -117,6 +121,10 @@ export class CustomizeRadarModal extends Modal {
 
 	private renderCategoriesSection(container: HTMLElement): void {
 		container.createEl("h3", { text: "Categories" });
+		container.createEl("p", {
+			text: "Segments that divide the radar, like topics or teams. Each blip belongs to one segment.",
+			cls: "radar-modal-section-desc",
+		});
 
 		const rows: HTMLElement[] = [];
 
@@ -197,6 +205,10 @@ export class CustomizeRadarModal extends Modal {
 
 	private renderBlipSection(container: HTMLElement): void {
 		container.createEl("h3", { text: "Blips" });
+		container.createEl("p", {
+			text: "Items placed on the radar. Each blip represents a note or a piece of text.",
+			cls: "radar-modal-section-desc",
+		});
 
 		new Setting(container)
 			.setName("Blip size")

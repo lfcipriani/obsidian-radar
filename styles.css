@@ -182,6 +182,13 @@
 	pointer-events: none;
 }
 
+/* Customize modal */
+.radar-modal-section-desc {
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+	margin: -8px 0 12px;
+}
+
 /* Error message */
 .radar-error {
 	color: var(--text-error);
