@@ -1,9 +1,9 @@
 /**
  * Radar Toolbar
- * Toolbar component with add and zoom controls
+ * Floating icon-only control panel overlaid on the radar
  */
 
-import { setIcon } from "obsidian";
+import { setIcon, setTooltip } from "obsidian";
 
 export interface RadarToolbarOptions {
 	onAddNote: () => void;
@@ -25,56 +25,31 @@ export class RadarToolbar {
 	private render(options: RadarToolbarOptions): void {
 		this.container.empty();
 
-		// Add note button
-		const addNoteBtn = this.container.createEl("button", {
-			cls: "radar-toolbar-btn",
-			attr: { "aria-label": "Add note" },
-		});
-		setIcon(addNoteBtn, "file-plus");
-		addNoteBtn.createSpan({ text: "Add note" });
-		addNoteBtn.addEventListener("click", options.onAddNote);
+		// Action group: add note, add text, customize
+		const actionGroup = this.container.createDiv({ cls: "radar-controls-group" });
+		this.addButton(actionGroup, "file-plus", "Add note blip", options.onAddNote);
+		this.addButton(actionGroup, "type-outline", "Add text blip", options.onAddText);
 
-		// Add text button
-		const addTextBtn = this.container.createEl("button", {
-			cls: "radar-toolbar-btn",
-			attr: { "aria-label": "Add text" },
-		});
-		setIcon(addTextBtn, "text");
-		addTextBtn.createSpan({ text: "Add text" });
-		addTextBtn.addEventListener("click", options.onAddText);
+		// Zoom group: zoom in, reset, zoom out
+		const zoomGroup = this.container.createDiv({ cls: "radar-controls-group" });
+		this.addButton(zoomGroup, "plus", "Zoom in", options.onZoomIn);
+		this.addButton(zoomGroup, "maximize", "Reset zoom", options.onResetZoom);
+		this.addButton(zoomGroup, "minus", "Zoom out", options.onZoomOut);
 
-		// Customize button
-		const customizeBtn = this.container.createEl("button", {
-			cls: "radar-toolbar-btn",
-			attr: { "aria-label": "Customize radar" },
-		});
-		setIcon(customizeBtn, "settings-2");
-		customizeBtn.createSpan({ text: "Customize" });
-		customizeBtn.addEventListener("click", options.onCustomize);
+		// Action group: customize
+		const customizeGroup = this.container.createDiv({ cls: "radar-controls-group" });
+		this.addButton(customizeGroup, "settings", "Customize", options.onCustomize);
+	}
 
-		// Spacer
-		this.container.createDiv({ cls: "radar-toolbar-spacer" });
-
-		// Zoom controls
-		const zoomOutBtn = this.container.createEl("button", {
-			cls: "radar-toolbar-btn radar-toolbar-btn-icon",
-			attr: { "aria-label": "Zoom out" },
-		});
-		setIcon(zoomOutBtn, "minus");
-		zoomOutBtn.addEventListener("click", options.onZoomOut);
-
-		const resetZoomBtn = this.container.createEl("button", {
-			cls: "radar-toolbar-btn radar-toolbar-btn-icon",
-			attr: { "aria-label": "Reset zoom" },
-		});
-		setIcon(resetZoomBtn, "maximize");
-		resetZoomBtn.addEventListener("click", options.onResetZoom);
-
-		const zoomInBtn = this.container.createEl("button", {
-			cls: "radar-toolbar-btn radar-toolbar-btn-icon",
-			attr: { "aria-label": "Zoom in" },
-		});
-		setIcon(zoomInBtn, "plus");
-		zoomInBtn.addEventListener("click", options.onZoomIn);
+	private addButton(
+		group: HTMLElement,
+		icon: string,
+		tooltip: string,
+		onClick: () => void
+	): void {
+		const btn = group.createEl("button", { cls: "radar-control-btn" });
+		setIcon(btn, icon);
+		setTooltip(btn, tooltip, { placement: "left", delay: 500 });
+		btn.addEventListener("click", onClick);
 	}
 }

@@ -13,42 +13,48 @@
 .radar-main {
 	display: flex;
 	flex-direction: column;
-	height: 100%;
-}
-
-/* Toolbar */
-.radar-toolbar {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	padding: 8px 12px;
-	border-bottom: 1px solid var(--background-modifier-border);
-	flex-shrink: 0;
-}
-
-.radar-toolbar-btn {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	padding: 6px 12px;
-	border-radius: var(--radius-s);
-	background: var(--interactive-normal);
-	color: var(--text-normal);
-	border: none;
-	cursor: pointer;
-	font-size: var(--font-ui-small);
-}
-
-.radar-toolbar-btn:hover {
-	background: var(--interactive-hover);
-}
-
-.radar-toolbar-btn-icon {
-	padding: 6px 8px;
-}
-
-.radar-toolbar-spacer {
 	flex: 1;
+	position: relative;
+	overflow: hidden;
+}
+
+/* Floating controls panel */
+.radar-controls {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	z-index: 10;
+}
+
+.radar-controls-group {
+	display: flex;
+	flex-direction: column;
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	padding: 3px;
+	gap: 1px;
+}
+
+.radar-control-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	border-radius: var(--radius-s);
+	background: transparent;
+	border: none;
+	color: var(--text-normal);
+	cursor: pointer;
+}
+
+.radar-control-btn:hover {
+	background: var(--interactive-hover);
 }
 
 /* SVG Container */
@@ -256,14 +262,6 @@
 
 /* Mobile adjustments */
 @media (max-width: 600px) {
-	.radar-toolbar {
-		flex-wrap: wrap;
-	}
-
-	.radar-toolbar-spacer {
-		display: none;
-	}
-
 	.radar-svg-container {
 		padding: 10px;
 	}

@@ -93,11 +93,12 @@ export class RadarView extends TextFileView {
 		// Create main container
 		this.mainContainer = container.createDiv({ cls: "radar-main" });
 
-		// Create toolbar container
-		const toolbarContainer = this.mainContainer.createDiv({ cls: "radar-toolbar" });
-
 		// Create SVG container
 		this.svgContainer = this.mainContainer.createDiv({ cls: "radar-svg-container" });
+
+		// Create floating controls panel — sibling of svgContainer so renderRadar's
+		// svgContainer.empty() never destroys it
+		const toolbarContainer = this.mainContainer.createDiv({ cls: "radar-controls" });
 
 		// Create toolbar
 		this.toolbar = new RadarToolbar(toolbarContainer, {
