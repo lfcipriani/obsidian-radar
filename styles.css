@@ -209,6 +209,11 @@
 	display: none;
 }
 
+/* Priority labels hidden mode */
+.radar-priority-labels-hidden .radar-priority-label {
+	display: none;
+}
+
 /* Titles hidden mode: hide all, reveal on hover (full if truncated, plain otherwise) */
 .radar-titles-hidden .radar-blip-title {
 	display: none;

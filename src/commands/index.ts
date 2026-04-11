@@ -92,4 +92,15 @@ export function registerCommands(plugin: RadarPlugin): void {
 			return true;
 		},
 	});
+
+	plugin.addCommand({
+		id: "radar:toggle-priority-labels",
+		name: "Toggle priority names",
+		checkCallback: (checking) => {
+			const view = plugin.app.workspace.getActiveViewOfType(RadarView);
+			if (!view) return false;
+			if (!checking) view.togglePriorityLabels();
+			return true;
+		},
+	});
 }

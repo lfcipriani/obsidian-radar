@@ -456,6 +456,17 @@ export class RadarRenderer {
 	}
 
 	/**
+	 * Show or hide the priority level labels on the rings
+	 */
+	setPriorityLabelsVisible(visible: boolean): void {
+		if (visible) {
+			this.backgroundGroup.removeClass("radar-priority-labels-hidden");
+		} else {
+			this.backgroundGroup.addClass("radar-priority-labels-hidden");
+		}
+	}
+
+	/**
 	 * Clean up
 	 */
 	destroy(): void {

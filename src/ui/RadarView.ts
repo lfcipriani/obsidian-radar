@@ -20,6 +20,7 @@ export class RadarView extends TextFileView {
 	private viewState: ViewState = { ...DEFAULT_VIEW_STATE };
 	private titlesVisible = true;
 	private glowVisible = true;
+	private priorityLabelsVisible = true;
 	private renderer: RadarRenderer | null = null;
 	private toolbar: RadarToolbar | null = null;
 	private interactions: RadarInteractions | null = null;
@@ -109,6 +110,7 @@ export class RadarView extends TextFileView {
 			onCustomize: () => this.openCustomizeModal(),
 			onToggleTitles: () => this.toggleTitles(),
 			onToggleGlow: () => this.toggleGlow(),
+			onTogglePriorityLabels: () => this.togglePriorityLabels(),
 			onZoomIn: () => this.zoomIn(),
 			onZoomOut: () => this.zoomOut(),
 			onResetZoom: () => this.resetZoom(),
@@ -164,6 +166,7 @@ export class RadarView extends TextFileView {
 		this.interactions.setPan(this.viewState.panX, this.viewState.panY);
 		this.renderer.setTitlesVisible(this.titlesVisible);
 		this.renderer.setGlowVisible(this.glowVisible);
+		this.renderer.setPriorityLabelsVisible(this.priorityLabelsVisible);
 	}
 
 	/**
@@ -529,6 +532,12 @@ export class RadarView extends TextFileView {
 		this.glowVisible = !this.glowVisible;
 		this.toolbar?.setGlowVisible(this.glowVisible);
 		this.renderer?.setGlowVisible(this.glowVisible);
+	}
+
+	togglePriorityLabels(): void {
+		this.priorityLabelsVisible = !this.priorityLabelsVisible;
+		this.toolbar?.setPriorityLabelsVisible(this.priorityLabelsVisible);
+		this.renderer?.setPriorityLabelsVisible(this.priorityLabelsVisible);
 	}
 
 	zoomIn(): void {
