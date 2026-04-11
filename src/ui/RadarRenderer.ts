@@ -21,6 +21,7 @@ export class RadarRenderer {
 	private static readonly maxBlipTitleLength = 15;
 
 	private svg: SVGSVGElement;
+	private defsEl: SVGDefsElement;
 	private backgroundGroup: SVGGElement;
 	private segmentsGroup: SVGGElement;
 	private categoryGroup: SVGGElement;
@@ -41,6 +42,7 @@ export class RadarRenderer {
 
 		// Create SVG structure
 		this.svg = createSvgContainer(SVG_CONFIG.viewBoxSize, "radar-svg");
+		this.defsEl = createSvgElement("defs", {});
 		this.backgroundGroup = createGroup("radar-background");
 		this.segmentsGroup = createGroup("radar-category-segments");
 		this.categoryGroup = createGroup("radar-categories");
@@ -49,6 +51,7 @@ export class RadarRenderer {
 			transform: `translate(${SVG_CONFIG.center},${SVG_CONFIG.center})`,
 		});
 
+		this.svg.appendChild(this.defsEl);
 		this.svg.appendChild(this.backgroundGroup);
 		this.svg.appendChild(this.segmentsGroup);
 		this.svg.appendChild(this.categoryGroup);
@@ -75,6 +78,7 @@ export class RadarRenderer {
 	private renderPriorityRings(): void {
 		this.backgroundGroup.innerHTML = "";
 		this.priorityLabelsGroup.innerHTML = "";
+		this.defsEl.innerHTML = "";
 
 		const { center, maxRadius, dashArray } = SVG_CONFIG;
 
@@ -85,12 +89,32 @@ export class RadarRenderer {
 			});
 			this.backgroundGroup.appendChild(circle);
 
-			// Add priority label above the category dividers layer
+			// Add priority label curved along the inside of the ring,
+			// centered on the vertical axis using a ±45° arc around 12 o'clock
 			if (priority.name) {
-				const labelX = center + 5;
-				const labelY = center - radius - 5;
-				const label = createText(labelX, labelY, priority.name, "radar-priority-label");
-				this.priorityLabelsGroup.appendChild(label);
+				const labelRadius = radius - 2;
+				const pathId = `radar-priority-arc-${priority.id}`;
+
+				// Points at ±45° from 12 o'clock (compass angles: x=cx+r·sinθ, y=cy−r·cosθ)
+				const halfAngle = Math.PI / 4;
+				const dx = labelRadius * Math.sin(halfAngle);
+				const dy = (labelRadius - 10) * Math.cos(halfAngle);
+				const arcD = `M ${center - dx},${center - dy} A ${labelRadius},${labelRadius} 0 0 1 ${center + dx},${center - dy}`;
+
+				const pathEl = createSvgElement("path", { id: pathId, d: arcD });
+				this.defsEl.appendChild(pathEl);
+
+				const textEl = createSvgElement("text", {
+					class: "radar-priority-label",
+					"text-anchor": "middle",
+				});
+				const textPathEl = createSvgElement("textPath", {
+					href: `#${pathId}`,
+					startOffset: "50%",
+				});
+				textPathEl.textContent = priority.name;
+				textEl.appendChild(textPathEl);
+				this.priorityLabelsGroup.appendChild(textEl);
 			}
 		}
 	}
