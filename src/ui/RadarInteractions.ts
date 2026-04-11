@@ -374,14 +374,20 @@ export class RadarInteractions {
 		e.preventDefault();
 		e.stopPropagation();
 
-		this.handleZoom(e.deltaY);
+		this.handleZoom(e.deltaY, e.ctrlKey);
 	}
 
 	/**
-	 * Handle zoom from wheel delta
+	 * Handle zoom from wheel delta.
+	 * Mouse wheel fires one event per notch with a large deltaY, so a fixed
+	 * step feels right. Trackpad pinch fires many events with small deltaY
+	 * values, so we scale proportionally to avoid zooming too fast.
 	 */
-	private handleZoom(deltaY: number): void {
-		const delta = deltaY > 0 ? -SVG_CONFIG.zoomStep : SVG_CONFIG.zoomStep;
+	private handleZoom(deltaY: number, isPinch = false): void {
+		const delta = isPinch
+			? -deltaY * 0.01
+			: deltaY > 0 ? -SVG_CONFIG.zoomStep : SVG_CONFIG.zoomStep;
+
 		const newZoom = clamp(
 			this.currentZoom + delta,
 			SVG_CONFIG.minZoom,
