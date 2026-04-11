@@ -24,6 +24,7 @@ export class RadarRenderer {
 	private backgroundGroup: SVGGElement;
 	private segmentsGroup: SVGGElement;
 	private categoryGroup: SVGGElement;
+	private priorityLabelsGroup: SVGGElement;
 	private blipsGroup: SVGGElement;
 	private radarData: RadarData;
 
@@ -43,6 +44,7 @@ export class RadarRenderer {
 		this.backgroundGroup = createGroup("radar-background");
 		this.segmentsGroup = createGroup("radar-category-segments");
 		this.categoryGroup = createGroup("radar-categories");
+		this.priorityLabelsGroup = createGroup("radar-priority-labels");
 		this.blipsGroup = createGroup("radar-blips", {
 			transform: `translate(${SVG_CONFIG.center},${SVG_CONFIG.center})`,
 		});
@@ -50,6 +52,7 @@ export class RadarRenderer {
 		this.svg.appendChild(this.backgroundGroup);
 		this.svg.appendChild(this.segmentsGroup);
 		this.svg.appendChild(this.categoryGroup);
+		this.svg.appendChild(this.priorityLabelsGroup);
 		this.svg.appendChild(this.blipsGroup);
 		this.container.appendChild(this.svg);
 
@@ -71,6 +74,7 @@ export class RadarRenderer {
 	 */
 	private renderPriorityRings(): void {
 		this.backgroundGroup.innerHTML = "";
+		this.priorityLabelsGroup.innerHTML = "";
 
 		const { center, maxRadius, dashArray } = SVG_CONFIG;
 
@@ -81,12 +85,12 @@ export class RadarRenderer {
 			});
 			this.backgroundGroup.appendChild(circle);
 
-			// Add priority label
+			// Add priority label above the category dividers layer
 			if (priority.name) {
 				const labelX = center + 5;
 				const labelY = center - radius - 5;
 				const label = createText(labelX, labelY, priority.name, "radar-priority-label");
-				this.backgroundGroup.appendChild(label);
+				this.priorityLabelsGroup.appendChild(label);
 			}
 		}
 	}
@@ -460,9 +464,9 @@ export class RadarRenderer {
 	 */
 	setPriorityLabelsVisible(visible: boolean): void {
 		if (visible) {
-			this.backgroundGroup.removeClass("radar-priority-labels-hidden");
+			this.priorityLabelsGroup.removeClass("radar-priority-labels-hidden");
 		} else {
-			this.backgroundGroup.addClass("radar-priority-labels-hidden");
+			this.priorityLabelsGroup.addClass("radar-priority-labels-hidden");
 		}
 	}
 

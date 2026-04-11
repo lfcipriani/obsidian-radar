@@ -98,7 +98,7 @@
 }
 
 .radar-priority-label {
-	font-size: 10px;
+	font-size: 8px;
 	fill: var(--text-muted);
 	font-weight: 500;
 }
