@@ -20,6 +20,7 @@ const PRESET_COLORS = [
 	"var(--color-blue)",
 	"var(--color-purple)",
 ];
+const MAX_PRIORITY_NAME_LENGTH = 15;
 const MAX_CATEGORY_NAME_LENGTH = 35;
 const MIN_PRIORITY_LEVELS = 1;
 const MIN_CATEGORIES = 3;
@@ -91,8 +92,15 @@ export class CustomizeRadarModal extends Modal {
 					text
 						.setValue(priority.name)
 						.setPlaceholder("Level name")
+						.then((component) => {
+							component.inputEl.maxLength = MAX_PRIORITY_NAME_LENGTH;
+						})
 						.onChange((value) => {
-							priority.name = value;
+							const trimmedValue = value.slice(0, MAX_PRIORITY_NAME_LENGTH);
+							priority.name = trimmedValue;
+							if (trimmedValue !== value) {
+								text.setValue(trimmedValue);
+							}
 							this.options.onPrioritiesChanged([...this.priorities]);
 						})
 				)
