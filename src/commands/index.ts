@@ -95,7 +95,7 @@ export function registerCommands(plugin: RadarPlugin): void {
 
 	plugin.addCommand({
 		id: "radar:toggle-priority-labels",
-		name: "Toggle priority names",
+		name: "Toggle priority levels",
 		checkCallback: (checking) => {
 			const view = plugin.app.workspace.getActiveViewOfType(RadarView);
 			if (!view) return false;
