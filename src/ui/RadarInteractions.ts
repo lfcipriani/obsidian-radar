@@ -40,6 +40,11 @@ export class RadarInteractions {
 	private panStartOffsetX = 0;
 	private panStartOffsetY = 0;
 
+	// Touch pinch-zoom state
+	private isPinching = false;
+	private pinchStartDistance = 0;
+	private pinchStartZoom = 1;
+
 	// Bound event handlers for proper removal
 	private boundMouseMove: (e: MouseEvent) => void;
 	private boundMouseUp: (e: MouseEvent) => void;
@@ -157,9 +162,28 @@ export class RadarInteractions {
 	}
 
 	/**
-	 * Touch start on SVG - start blip drag or pan
+	 * Touch start on SVG - start blip drag, pan, or pinch zoom
 	 */
 	private onSvgTouchStart(e: TouchEvent): void {
+		// Two-finger pinch: cancel any ongoing single-touch interaction and start pinch
+		if (e.touches.length === 2) {
+			e.preventDefault();
+			if (this.isPanning) this.endPan();
+			if (this.draggedBlip) {
+				this.draggedBlip.classList.remove("dragging");
+				this.draggedBlip = null;
+			}
+			const t1 = e.touches[0]!;
+			const t2 = e.touches[1]!;
+			this.isPinching = true;
+			this.pinchStartDistance = Math.hypot(
+				t2.clientX - t1.clientX,
+				t2.clientY - t1.clientY
+			);
+			this.pinchStartZoom = this.currentZoom;
+			return;
+		}
+
 		const target = e.target as SVGElement;
 		const blipGroup = target.closest(".radar-blip") as SVGGElement;
 		const touch = e.touches[0];
@@ -216,9 +240,31 @@ export class RadarInteractions {
 	}
 
 	/**
-	 * Touch move - update drag or pan position
+	 * Touch move - update drag, pan, or pinch zoom position
 	 */
 	private onTouchMove(e: TouchEvent): void {
+		// Two-finger pinch zoom
+		if (e.touches.length === 2 && this.isPinching) {
+			e.preventDefault();
+			const t1 = e.touches[0]!;
+			const t2 = e.touches[1]!;
+			const newDistance = Math.hypot(
+				t2.clientX - t1.clientX,
+				t2.clientY - t1.clientY
+			);
+			const scale = newDistance / this.pinchStartDistance;
+			const newZoom = clamp(
+				this.pinchStartZoom * scale,
+				SVG_CONFIG.minZoom,
+				SVG_CONFIG.maxZoom
+			);
+			if (newZoom !== this.currentZoom) {
+				this.currentZoom = newZoom;
+				this.options.onZoomChange(newZoom);
+			}
+			return;
+		}
+
 		const touch = e.touches[0];
 		if (e.touches.length !== 1 || !touch) return;
 
@@ -281,9 +327,16 @@ export class RadarInteractions {
 	}
 
 	/**
-	 * Touch end - end drag or pan
+	 * Touch end - end drag, pan, or pinch zoom
 	 */
 	private onTouchEnd(e: TouchEvent): void {
+		if (this.isPinching) {
+			if (e.touches.length < 2) {
+				this.isPinching = false;
+			}
+			return;
+		}
+
 		if (this.draggedBlip) {
 			const blipId = this.draggedBlip.getAttribute("data-blip-id");
 			if (blipId) {
@@ -385,7 +438,7 @@ export class RadarInteractions {
 	 */
 	private handleZoom(deltaY: number, isPinch = false): void {
 		const delta = isPinch
-			? -deltaY * 0.01
+			? -deltaY * 0.02
 			: deltaY > 0 ? -SVG_CONFIG.zoomStep : SVG_CONFIG.zoomStep;
 
 		const newZoom = clamp(
