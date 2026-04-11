@@ -11,7 +11,10 @@ Obsidian Radar is a plugin that allows users to visualize notes and text items a
 
 ## Documentation
 
-- **[agent/SPEC.md](agent/SPEC.md)**: Feature specification, user experience, and use cases
+- Blip: an item in the radar. It can be an obsidian note or a text. 
+- Priority: set of concentric circles that indicate the priority based on how close to center the blips are. User defined, can range from 1 to 7 priority levels, to avoid having too many circles in the radar.
+- Category: segments of the radar circle that can be used to group notes under a same category. User defined, can range from 0 (no categories) to 8, to avoid having sections that are too thin to have blips on it.
+- Blip positiong is done with polar coordinates: (r) radial distance in pixels, (theta) angle measured in degress, counterclockwise from the positive x-axis
 - **[agent/ARCHITECTURE.md](agent/ARCHITECTURE.md)**: Detailed architecture, data model, component structure, and data flow
 
 ## Commands
@@ -71,7 +74,6 @@ src/
 - Follow the architecture in `agent/ARCHITECTURE.md`
 - Add commands with stable IDs (don't rename once released)
 - Write idempotent code paths so reload/unload doesn't leak listeners
-- Test both mouse and touch interactions for blip dragging
 
 **Don't**
 - Introduce network calls (this is a local-only plugin)
