@@ -173,10 +173,12 @@ export class RadarView extends TextFileView {
 		const blip = this.radarData?.blips.find((b) => b.id === blipId);
 		if (!blip) return;
 
-		// Command+click (macOS) or Ctrl+click (Win/Linux) on a note blip → open in new tab
+		// Command+click (macOS) or Ctrl+click (Win/Linux)
 		if (event instanceof MouseEvent && (event.metaKey || event.ctrlKey)) {
 			if (blip.type === "note" && blip.notePath) {
 				void this.app.workspace.openLinkText(blip.notePath, "", "tab");
+			} else if (blip.type === "text") {
+				void this.createNoteFromBlip(blip);
 			}
 			return;
 		}
@@ -194,6 +196,16 @@ export class RadarView extends TextFileView {
 							void this.app.workspace.openLinkText(blip.notePath, "");
 						}
 					})
+			);
+		}
+
+		// If it's a text blip, offer to create a note from it
+		if (blip.type === "text") {
+			menu.addItem((item) =>
+				item
+					.setTitle("Create a note from this blip")
+					.setIcon("file-plus")
+					.onClick(() => void this.createNoteFromBlip(blip))
 			);
 		}
 
@@ -394,6 +406,29 @@ export class RadarView extends TextFileView {
 	}
 
 	/**
+	 * Revert note blips back to text blips when their linked note is deleted.
+	 * Called by the plugin's vault delete handler for open views.
+	 */
+	revertNoteBlipToText(deletedPath: string): void {
+		if (!this.radarData) return;
+
+		let changed = false;
+
+		for (const blip of this.radarData.blips) {
+			if (blip.type === "note" && blip.notePath === deletedPath) {
+				blip.type = "text";
+				delete blip.notePath;
+				changed = true;
+			}
+		}
+
+		if (changed) {
+			this.renderer?.updateData(this.radarData);
+			this.requestSave();
+		}
+	}
+
+	/**
 	 * Update blip notePaths (and matching titles) when a vault file is renamed.
 	 * Called by the plugin's vault rename handler for open views.
 	 */
@@ -436,6 +471,38 @@ export class RadarView extends TextFileView {
 
 		this.plugin.radarStore.removeBlip(this.radarData, blipId);
 		this.renderer?.removeBlip(blipId);
+		this.requestSave();
+	}
+
+	/**
+	 * Create a new note from a text blip and convert the blip to a note blip
+	 */
+	private async createNoteFromBlip(blip: Blip): Promise<void> {
+		if (!this.radarData) return;
+
+		const fileName = `${blip.title}.md`;
+		let file: TFile;
+
+		const existing = this.app.vault.getAbstractFileByPath(fileName);
+		if (existing instanceof TFile) {
+			file = existing;
+		} else {
+			try {
+				file = await this.app.vault.create(fileName, "");
+			} catch (error) {
+				console.error("Failed to create note from blip:", error);
+				return;
+			}
+		}
+
+		await this.app.workspace.openLinkText(file.path, "", "tab");
+
+		this.plugin.radarStore.updateBlip(this.radarData, blip.id, {
+			type: "note",
+			notePath: file.path,
+		});
+
+		this.renderer?.updateData(this.radarData);
 		this.requestSave();
 	}
 

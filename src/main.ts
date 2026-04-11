@@ -45,6 +45,13 @@ export default class RadarPlugin extends Plugin {
 			})
 		);
 
+		// Revert note blips to text blips when their linked note is deleted
+		this.registerEvent(
+			this.app.vault.on("delete", (file) => {
+				this.handleFileDelete(file);
+			})
+		);
+
 		this.app.workspace.onLayoutReady(() => {
 			void this.refreshOpenRadarLeaves();
 		});
@@ -122,6 +129,51 @@ export default class RadarPlugin extends Plugin {
 					if (blip.notePath === oldPath) {
 						blip.notePath = newPath;
 						if (blip.title === oldBasename) blip.title = newBasename;
+						changed = true;
+					}
+				}
+
+				if (changed) {
+					await this.radarStore.saveRadar(file, data);
+				}
+			} catch {
+				// Skip files that can't be read or parsed
+			}
+		}
+	}
+
+	private handleFileDelete(file: TAbstractFile): void {
+		if (!(file instanceof TFile)) return;
+
+		const deletedPath = file.path;
+		const openRadarPaths = new Set<string>();
+
+		// Update all open radar views in memory
+		for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_RADAR)) {
+			const view = leaf.view as RadarView;
+			if (view.file?.path) openRadarPaths.add(view.file.path);
+			view.revertNoteBlipToText(deletedPath);
+		}
+
+		// Update all closed radar files on disk
+		void this.revertDeletedNotesInClosedFiles(deletedPath, openRadarPaths);
+	}
+
+	private async revertDeletedNotesInClosedFiles(
+		deletedPath: string,
+		skipPaths: Set<string>
+	): Promise<void> {
+		for (const file of this.radarStore.listRadarFiles()) {
+			if (skipPaths.has(file.path)) continue;
+
+			try {
+				const data = await this.radarStore.loadRadar(file);
+				let changed = false;
+
+				for (const blip of data.blips) {
+					if (blip.type === "note" && blip.notePath === deletedPath) {
+						blip.type = "text";
+						delete blip.notePath;
 						changed = true;
 					}
 				}
