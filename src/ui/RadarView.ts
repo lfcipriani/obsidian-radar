@@ -104,25 +104,11 @@ export class RadarView extends TextFileView {
 
 		// Create toolbar
 		this.toolbar = new RadarToolbar(toolbarContainer, {
-			onAddNote: () => {
-				const pos = this.interactions?.getViewCenter();
-				this.openAddNoteModal(pos?.r, pos?.theta);
-			},
-			onAddText: () => {
-				const pos = this.interactions?.getViewCenter();
-				this.openAddTextModal(pos?.r, pos?.theta);
-			},
+			onAddNote: () => this.addNoteBlip(),
+			onAddText: () => this.addTextBlip(),
 			onCustomize: () => this.openCustomizeModal(),
-			onToggleTitles: () => {
-				this.titlesVisible = !this.titlesVisible;
-				this.toolbar?.setTitlesVisible(this.titlesVisible);
-				this.renderer?.setTitlesVisible(this.titlesVisible);
-			},
-			onToggleGlow: () => {
-				this.glowVisible = !this.glowVisible;
-				this.toolbar?.setGlowVisible(this.glowVisible);
-				this.renderer?.setGlowVisible(this.glowVisible);
-			},
+			onToggleTitles: () => this.toggleTitles(),
+			onToggleGlow: () => this.toggleGlow(),
 			onZoomIn: () => this.zoomIn(),
 			onZoomOut: () => this.zoomOut(),
 			onResetZoom: () => this.resetZoom(),
@@ -454,9 +440,31 @@ export class RadarView extends TextFileView {
 	}
 
 	/**
-	 * Zoom controls
+	 * Public actions callable from commands
 	 */
-	private zoomIn(): void {
+	addNoteBlip(): void {
+		const pos = this.interactions?.getViewCenter();
+		this.openAddNoteModal(pos?.r, pos?.theta);
+	}
+
+	addTextBlip(): void {
+		const pos = this.interactions?.getViewCenter();
+		this.openAddTextModal(pos?.r, pos?.theta);
+	}
+
+	toggleTitles(): void {
+		this.titlesVisible = !this.titlesVisible;
+		this.toolbar?.setTitlesVisible(this.titlesVisible);
+		this.renderer?.setTitlesVisible(this.titlesVisible);
+	}
+
+	toggleGlow(): void {
+		this.glowVisible = !this.glowVisible;
+		this.toolbar?.setGlowVisible(this.glowVisible);
+		this.renderer?.setGlowVisible(this.glowVisible);
+	}
+
+	zoomIn(): void {
 		const newZoom = Math.min(
 			this.viewState.zoom + SVG_CONFIG.zoomStep,
 			SVG_CONFIG.maxZoom
@@ -464,7 +472,7 @@ export class RadarView extends TextFileView {
 		this.onZoomChange(newZoom);
 	}
 
-	private zoomOut(): void {
+	zoomOut(): void {
 		const newZoom = Math.max(
 			this.viewState.zoom - SVG_CONFIG.zoomStep,
 			SVG_CONFIG.minZoom
@@ -472,7 +480,7 @@ export class RadarView extends TextFileView {
 		this.onZoomChange(newZoom);
 	}
 
-	private resetZoom(): void {
+	resetZoom(): void {
 		// Reset both zoom and pan
 		this.onZoomChange(DEFAULT_VIEW_STATE.zoom);
 		this.onPanChange(DEFAULT_VIEW_STATE.panX, DEFAULT_VIEW_STATE.panY);
