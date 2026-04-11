@@ -9,6 +9,7 @@ export interface RadarToolbarOptions {
 	onAddNote: () => void;
 	onAddText: () => void;
 	onCustomize: () => void;
+	onHelp: () => void;
 	onToggleTitles: () => void;
 	onToggleGlow: () => void;
 	onTogglePriorityLabels: () => void;
@@ -48,9 +49,10 @@ export class RadarToolbar {
 		this.glowBtn = this.addButton(designGroup, "star-off", "Hide glow", options.onToggleGlow);
 		this.priorityLabelsBtn = this.addButton(designGroup, "circle-parking-off", "Hide priority levels", options.onTogglePriorityLabels);
 
-		// Settings group: customize
+		// Settings group: customize, help
 		const settingsGroup = this.container.createDiv({ cls: "radar-controls-group" });
 		this.addButton(settingsGroup, "settings", "Customize", options.onCustomize);
+		this.addButton(settingsGroup, "circle-help", "Help", options.onHelp);
 	}
 
 	setTitlesVisible(visible: boolean): void {

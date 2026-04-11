@@ -13,6 +13,7 @@ import { RadarInteractions } from "./RadarInteractions";
 import { AddBlipModal } from "./AddBlipModal";
 import { AddTextModal } from "./AddTextModal";
 import { CustomizeRadarModal } from "./CustomizeRadarModal";
+import { HelpModal } from "./HelpModal";
 
 export class RadarView extends TextFileView {
 	private plugin: RadarPlugin;
@@ -108,6 +109,7 @@ export class RadarView extends TextFileView {
 			onAddNote: () => this.addNoteBlip(),
 			onAddText: () => this.addTextBlip(),
 			onCustomize: () => this.openCustomizeModal(),
+			onHelp: () => this.openHelpModal(),
 			onToggleTitles: () => this.toggleTitles(),
 			onToggleGlow: () => this.toggleGlow(),
 			onTogglePriorityLabels: () => this.togglePriorityLabels(),
@@ -196,7 +198,7 @@ export class RadarView extends TextFileView {
 					.setIcon("file")
 					.onClick(() => {
 						if (blip.notePath) {
-							void this.app.workspace.openLinkText(blip.notePath, "");
+							void this.app.workspace.openLinkText(blip.notePath, "", "tab");
 						}
 					})
 			);
@@ -372,6 +374,13 @@ export class RadarView extends TextFileView {
 			});
 		});
 		modal.open();
+	}
+
+	/**
+	 * Open the help modal
+	 */
+	private openHelpModal(): void {
+		new HelpModal(this.app).open();
 	}
 
 	/**
