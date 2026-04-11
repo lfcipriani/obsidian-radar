@@ -96,8 +96,12 @@ export class RadarInteractions {
 		this.eventSurface.addEventListener("touchstart", this.boundTouchStart, {
 			passive: false,
 		});
-		document.addEventListener("touchmove", this.boundTouchMove, { passive: false });
-		document.addEventListener("touchend", this.boundTouchEnd);
+		// Capture phase so we intercept moves and ends before Obsidian's gesture handlers.
+		document.addEventListener("touchmove", this.boundTouchMove, {
+			passive: false,
+			capture: true,
+		});
+		document.addEventListener("touchend", this.boundTouchEnd, { capture: true });
 
 		// Capture wheel on the document so parent Obsidian panes can't steal it first.
 		document.addEventListener("wheel", this.boundWheel, {
@@ -168,6 +172,7 @@ export class RadarInteractions {
 		// Two-finger pinch: cancel any ongoing single-touch interaction and start pinch
 		if (e.touches.length === 2) {
 			e.preventDefault();
+			e.stopPropagation();
 			if (this.isPanning) this.endPan();
 			if (this.draggedBlip) {
 				this.draggedBlip.classList.remove("dragging");
@@ -193,10 +198,12 @@ export class RadarInteractions {
 		if (blipGroup) {
 			// Touched a blip - start blip drag
 			e.preventDefault();
+			e.stopPropagation();
 			this.startDrag(blipGroup, touch.clientX, touch.clientY);
 		} else {
 			// Touched empty space - start pan
 			e.preventDefault();
+			e.stopPropagation();
 			this.startPan(touch.clientX, touch.clientY);
 		}
 	}
@@ -246,6 +253,7 @@ export class RadarInteractions {
 		// Two-finger pinch zoom
 		if (e.touches.length === 2 && this.isPinching) {
 			e.preventDefault();
+			e.stopPropagation();
 			const t1 = e.touches[0]!;
 			const t2 = e.touches[1]!;
 			const newDistance = Math.hypot(
@@ -270,9 +278,11 @@ export class RadarInteractions {
 
 		if (this.draggedBlip) {
 			e.preventDefault();
+			e.stopPropagation();
 			this.updateDragPosition(touch.clientX, touch.clientY);
 		} else if (this.isPanning) {
 			e.preventDefault();
+			e.stopPropagation();
 			this.updatePanPosition(touch.clientX, touch.clientY);
 		}
 	}
@@ -533,8 +543,8 @@ export class RadarInteractions {
 		this.eventSurface.removeEventListener("contextmenu", this.boundContextMenu);
 		document.removeEventListener("mousemove", this.boundMouseMove);
 		document.removeEventListener("mouseup", this.boundMouseUp);
-		document.removeEventListener("touchmove", this.boundTouchMove);
-		document.removeEventListener("touchend", this.boundTouchEnd);
+		document.removeEventListener("touchmove", this.boundTouchMove, { capture: true });
+		document.removeEventListener("touchend", this.boundTouchEnd, { capture: true });
 		document.removeEventListener("wheel", this.boundWheel, true);
 		this.eventSurface.removeEventListener("dragenter", this.boundDragEnter);
 		this.eventSurface.removeEventListener("dragover", this.boundDragOver);
