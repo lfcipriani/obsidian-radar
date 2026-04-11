@@ -12,7 +12,7 @@ export class HelpModal extends Modal {
 
 	onOpen(): void {
 		const { contentEl } = this;
-		const mod = Platform.isMacOS ? "CMD" : "Ctrl";
+		const mod = Platform.isMacOS ? "Cmd" : "Ctrl";
 
 		contentEl.createEl("h2", { text: "Radar Help" });
 
@@ -27,7 +27,7 @@ export class HelpModal extends Modal {
 		contentEl.createEl("h3", { text: "Text Blips" });
 		const textList = contentEl.createEl("ul");
 		textList.createEl("li", { text: "Add: toolbar button or right-click on the radar" });
-		textList.createEl("li", { text: `Create note from blip: ${mod}+click or right-click → Create a note from this blip` });
+		textList.createEl("li", { text: `Create note from blip: ${mod}+click or right-click → Create note` });
 		textList.createEl("li", { text: "Remove: right-click the blip → Remove from radar" });
 	}
 
