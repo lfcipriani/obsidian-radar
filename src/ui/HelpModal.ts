@@ -14,21 +14,21 @@ export class HelpModal extends Modal {
 		const { contentEl } = this;
 		const mod = Platform.isMacOS ? "Cmd" : "Ctrl";
 
-		contentEl.createEl("h2", { text: "Radar Help" });
+		contentEl.createEl("h2", { text: "Radar help" });
 
-		// Note Blips
-		contentEl.createEl("h3", { text: "Note Blips" });
+		// Note blips
+		contentEl.createEl("h3", { text: "Note blips" });
 		const noteList = contentEl.createEl("ul");
 		noteList.createEl("li", { text: "Add: drag a note from the sidebar, toolbar button or right-click on the radar" });
 		noteList.createEl("li", { text: `Open note: ${mod}+click on the blip` });
-		noteList.createEl("li", { text: "Remove: right-click the blip → Remove from radar" });
+		noteList.createEl("li", { text: "Remove: right-click the blip → remove from radar" });
 
-		// Text Blips
-		contentEl.createEl("h3", { text: "Text Blips" });
+		// Text blips
+		contentEl.createEl("h3", { text: "Text blips" });
 		const textList = contentEl.createEl("ul");
 		textList.createEl("li", { text: "Add: toolbar button or right-click on the radar" });
 		textList.createEl("li", { text: `Create note from blip: ${mod}+click or right-click → Create note` });
-		textList.createEl("li", { text: "Remove: right-click the blip → Remove from radar" });
+		textList.createEl("li", { text: "Remove: right-click the blip → remove from radar" });
 	}
 
 	onClose(): void {
