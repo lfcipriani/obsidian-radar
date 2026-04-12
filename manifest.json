@@ -6,6 +6,9 @@
 	"description": "A plugin that answers the question: What's on your radar?",
 	"author": "Luis Cipriani",
 	"authorUrl": "https://www.talleye.com",
-	"fundingUrl": "https://obsidian.md/pricing",
-	"isDesktopOnly": false
+	"isDesktopOnly": false,
+	"fundingUrl": {
+        "Buy Me a Coffee": "https://buymeacoffee.com/lfcipriani",
+        "GitHub Sponsor": "https://github.com/sponsors/lfcipriani"
+    }
 }

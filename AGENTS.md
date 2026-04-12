@@ -12,8 +12,8 @@ Obsidian Radar is a plugin that allows users to visualize notes and text items a
 ## Documentation
 
 - Blip: an item in the radar. It can be an obsidian note or a text. 
-- Priority: set of concentric circles that indicate the priority based on how close to center the blips are. User defined, can range from 1 to 7 priority levels, to avoid having too many circles in the radar.
-- Category: segments of the radar circle that can be used to group notes under a same category. User defined, can range from 0 (no categories) to 8, to avoid having sections that are too thin to have blips on it.
+- Priority: set of concentric circles that indicate the priority based on how close to center the blips are. User defined, can range from 1 to 8 priority levels, to avoid having too many circles in the radar.
+- Category: segments of the radar circle that can be used to group notes under a same category. User defined, can range from 3 (no categories) to 8, to avoid having sections that are too thin to have blips on it.
 - Blip positiong is done with polar coordinates: (r) radial distance in pixels, (theta) angle measured in degress, counterclockwise from the positive x-axis
 - **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**: Detailed architecture, data model, component structure, and data flow
 
