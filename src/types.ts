@@ -6,6 +6,9 @@
 /** Type of blip - either a linked note or standalone text */
 export type BlipType = "note" | "text";
 
+/** Title display mode for blips */
+export type TitleMode = "crop" | "hidden" | "full";
+
 /** A blip represents an item on the radar */
 export interface Blip {
 	/** Unique identifier (UUID) */

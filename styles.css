@@ -223,6 +223,15 @@
 	display: block;
 }
 
+/* Full titles mode: always show complete title, suppress cropped variant */
+.radar-titles-full .radar-blip-title--short {
+	display: none;
+}
+
+.radar-titles-full .radar-blip-title--full {
+	display: block;
+}
+
 /* Category segment fills */
 .radar-category-segment {
 	pointer-events: none;

@@ -5,7 +5,7 @@
 
 import { TextFileView, WorkspaceLeaf, Menu, TFile } from "obsidian";
 import type RadarPlugin from "../main";
-import type { RadarData, Blip, ViewState } from "../types";
+import type { RadarData, Blip, ViewState, TitleMode } from "../types";
 import { VIEW_TYPE_RADAR, SVG_CONFIG, DEFAULT_VIEW_STATE } from "../constants";
 import { RadarRenderer } from "./RadarRenderer";
 import { RadarToolbar } from "./RadarToolbar";
@@ -20,7 +20,7 @@ export class RadarView extends TextFileView {
 	private plugin: RadarPlugin;
 	private radarData: RadarData | null = null;
 	private viewState: ViewState = { ...DEFAULT_VIEW_STATE };
-	private titlesVisible = true;
+	private titleMode: TitleMode = "crop";
 	private glowVisible = true;
 	private priorityLabelsVisible = true;
 	private renderer: RadarRenderer | null = null;
@@ -167,7 +167,8 @@ export class RadarView extends TextFileView {
 		);
 		this.interactions.setZoom(this.viewState.zoom);
 		this.interactions.setPan(this.viewState.panX, this.viewState.panY);
-		this.renderer.setTitlesVisible(this.titlesVisible);
+		this.renderer.setTitleMode(this.titleMode);
+		this.toolbar?.setTitleMode(this.titleMode);
 		this.renderer.setGlowVisible(this.glowVisible);
 		this.renderer.setPriorityLabelsVisible(this.priorityLabelsVisible);
 	}
@@ -541,9 +542,15 @@ export class RadarView extends TextFileView {
 	}
 
 	toggleTitles(): void {
-		this.titlesVisible = !this.titlesVisible;
-		this.toolbar?.setTitlesVisible(this.titlesVisible);
-		this.renderer?.setTitlesVisible(this.titlesVisible);
+		if (this.titleMode === "crop") {
+			this.titleMode = "hidden";
+		} else if (this.titleMode === "hidden") {
+			this.titleMode = "full";
+		} else {
+			this.titleMode = "crop";
+		}
+		this.toolbar?.setTitleMode(this.titleMode);
+		this.renderer?.setTitleMode(this.titleMode);
 	}
 
 	toggleGlow(): void {

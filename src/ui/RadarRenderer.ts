@@ -3,7 +3,7 @@
  * Handles SVG rendering of the radar visualization
  */
 
-import type { RadarData, Blip } from "../types";
+import type { RadarData, Blip, TitleMode } from "../types";
 import { SVG_CONFIG } from "../constants";
 import { polarToCartesian } from "../utils/polarCoordinates";
 import {
@@ -507,13 +507,15 @@ export class RadarRenderer {
 	}
 
 	/**
-	 * Show or hide blip titles (titles still appear on hover when hidden)
+	 * Set the title display mode for blips
 	 */
-	setTitlesVisible(visible: boolean): void {
-		if (visible) {
-			this.blipsGroup.removeClass("radar-titles-hidden");
-		} else {
+	setTitleMode(mode: TitleMode): void {
+		this.blipsGroup.removeClass("radar-titles-hidden");
+		this.blipsGroup.removeClass("radar-titles-full");
+		if (mode === "hidden") {
 			this.blipsGroup.addClass("radar-titles-hidden");
+		} else if (mode === "full") {
+			this.blipsGroup.addClass("radar-titles-full");
 		}
 	}
 

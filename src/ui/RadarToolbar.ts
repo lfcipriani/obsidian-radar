@@ -4,6 +4,7 @@
  */
 
 import { setIcon, setTooltip } from "obsidian";
+import type { TitleMode } from "../types";
 
 export interface RadarToolbarOptions {
 	onAddNote: () => void;
@@ -55,13 +56,18 @@ export class RadarToolbar {
 		this.addButton(settingsGroup, "circle-help", "Help", options.onHelp);
 	}
 
-	setTitlesVisible(visible: boolean): void {
+	setTitleMode(mode: TitleMode): void {
 		if (!this.titlesBtn) return;
-		setIcon(this.titlesBtn, visible ? "eye-off" : "eye");
-		setTooltip(this.titlesBtn, visible ? "Hide titles" : "Show titles", {
-			placement: "left",
-			delay: 500,
-		});
+		if (mode === "crop") {
+			setIcon(this.titlesBtn, "eye-off");
+			setTooltip(this.titlesBtn, "Hide titles", { placement: "left", delay: 500 });
+		} else if (mode === "hidden") {
+			setIcon(this.titlesBtn, "eye");
+			setTooltip(this.titlesBtn, "Show full titles", { placement: "left", delay: 500 });
+		} else {
+			setIcon(this.titlesBtn, "scan-eye");
+			setTooltip(this.titlesBtn, "Crop titles", { placement: "left", delay: 500 });
+		}
 	}
 
 	setGlowVisible(visible: boolean): void {
