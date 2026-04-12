@@ -3,7 +3,7 @@
  * Convert between polar and Cartesian coordinates
  */
 
-import type { PriorityLevel, Category } from "../types";
+import type { PriorityLevel, Category, Blip } from "../types";
 
 export interface CartesianPoint {
 	x: number;
@@ -111,6 +111,37 @@ export function getCategoryFromAngle(
 
 	// If angle is less than first category's start, it belongs to the last category
 	return sorted[sorted.length - 1] ?? categories[0];
+}
+
+/**
+ * Rotate blips so they follow their categories after a reorder or resize.
+ * Each blip's relative position within its old category segment is preserved
+ * in the corresponding new segment. Mutates blips in place.
+ */
+export function rotateBlipsWithCategories(
+	blips: Blip[],
+	oldCategories: Category[],
+	newCategories: Category[]
+): void {
+	if (oldCategories.length === 0 || newCategories.length === 0) return;
+
+	const oldStep = 360 / oldCategories.length;
+	const newStep = 360 / newCategories.length;
+
+	const newStartById = new Map<string, number>(
+		newCategories.map((c) => [c.id, c.startAngle])
+	);
+
+	for (const blip of blips) {
+		const oldCat = getCategoryFromAngle(blip.theta, oldCategories);
+		if (!oldCat) continue;
+
+		const newStart = newStartById.get(oldCat.id);
+		if (newStart === undefined) continue; // category was removed; leave blip in place
+
+		const relativeOffset = ((blip.theta - oldCat.startAngle + 360) % 360) / oldStep;
+		blip.theta = (newStart + relativeOffset * newStep + 360) % 360;
+	}
 }
 
 /**

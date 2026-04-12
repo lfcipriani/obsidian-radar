@@ -14,6 +14,7 @@ import { AddBlipModal } from "./AddBlipModal";
 import { AddTextModal } from "./AddTextModal";
 import { CustomizeRadarModal } from "./CustomizeRadarModal";
 import { HelpModal } from "./HelpModal";
+import { rotateBlipsWithCategories } from "../utils/polarCoordinates";
 
 export class RadarView extends TextFileView {
 	private plugin: RadarPlugin;
@@ -398,6 +399,7 @@ export class RadarView extends TextFileView {
 			},
 			onCategoriesChanged: (categories) => {
 				if (!this.radarData) return;
+				rotateBlipsWithCategories(this.radarData.blips, this.radarData.categories, categories);
 				this.plugin.radarStore.setCategories(this.radarData, categories);
 				this.renderer?.updateData(this.radarData);
 				this.requestSave();
