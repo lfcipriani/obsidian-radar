@@ -411,6 +411,12 @@ export class RadarView extends TextFileView {
 				this.renderer?.updateData(this.radarData);
 				this.requestSave();
 			},
+			onBlipFontSizeChanged: (blipFontSize) => {
+				if (!this.radarData) return;
+				this.plugin.radarStore.setBlipFontSize(this.radarData, blipFontSize);
+				this.renderer?.updateData(this.radarData);
+				this.requestSave();
+			},
 			onBlipColorChanged: (color) => {
 				if (!this.radarData) return;
 				this.plugin.radarStore.setBlipColor(this.radarData, color);

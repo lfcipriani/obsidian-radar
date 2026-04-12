@@ -49,6 +49,11 @@ export const DEFAULT_BLIP_RADIUS = 5;
 export const MIN_BLIP_RADIUS = 3;
 export const MAX_BLIP_RADIUS = 20;
 
+/** Default font size for blip labels in pixels */
+export const DEFAULT_BLIP_FONT_SIZE = 7;
+export const MIN_BLIP_FONT_SIZE = 3;
+export const MAX_BLIP_FONT_SIZE = 12;
+
 const RADAR_VIEWBOX_PADDING = 300;
 const RADAR_BASE_DIAMETER = 600;
 

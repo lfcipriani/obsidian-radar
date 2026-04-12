@@ -66,6 +66,8 @@ export interface RadarData {
 	categories: Category[];
 	/** Radius of blip circles in pixels */
 	blipRadius: number;
+	/** Font size for blip labels in pixels */
+	blipFontSize: number;
 	/** Default blip color (overrides accent; individual blips may override this) */
 	blipColor?: string;
 	/** Blips on the radar */

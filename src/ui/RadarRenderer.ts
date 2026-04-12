@@ -357,7 +357,7 @@ export class RadarRenderer {
 	 */
 	private renderBlip(blip: Blip): void {
 		const { maxRadius } = SVG_CONFIG;
-		const { blipRadius } = this.radarData;
+		const { blipRadius, blipFontSize } = this.radarData;
 
 		const pos = polarToCartesian(blip.r, blip.theta, maxRadius);
 
@@ -389,6 +389,7 @@ export class RadarRenderer {
 			isTruncated ? blip.title.slice(0, RadarRenderer.maxBlipTitleLength) + "…" : blip.title,
 			isTruncated ? "radar-blip-title radar-blip-title--short" : "radar-blip-title"
 		);
+		shortTitle.style.fontSize = `${blipFontSize}px`;
 
 		// Glow halo behind the dot
 		const flare = createCircle(0, 0, blipRadius * 2, "radar-blip-flare");
@@ -402,6 +403,7 @@ export class RadarRenderer {
 
 		if (isTruncated) {
 			const fullTitle = createText(0, titleY, blip.title, "radar-blip-title radar-blip-title--full");
+			fullTitle.style.fontSize = `${blipFontSize}px`;
 			blipGroup.appendChild(fullTitle);
 		}
 

@@ -6,7 +6,7 @@
 import { App, Modal, Setting } from "obsidian";
 import type { RadarData, PriorityLevel, Category } from "../types";
 import { generateId } from "../utils/idGenerator";
-import { MAX_BLIP_RADIUS, MIN_BLIP_RADIUS } from "../constants";
+import { MAX_BLIP_RADIUS, MIN_BLIP_RADIUS, MAX_BLIP_FONT_SIZE, MIN_BLIP_FONT_SIZE } from "../constants";
 
 const MAX_PRIORITY_LEVELS = 8;
 const MAX_CATEGORIES = 8;
@@ -29,6 +29,7 @@ export interface CustomizeRadarModalOptions {
 	onPrioritiesChanged: (levels: PriorityLevel[]) => void;
 	onCategoriesChanged: (categories: Category[]) => void;
 	onBlipRadiusChanged: (blipRadius: number) => void;
+	onBlipFontSizeChanged: (blipFontSize: number) => void;
 	onBlipColorChanged: (color: string | undefined) => void;
 }
 
@@ -36,6 +37,7 @@ export class CustomizeRadarModal extends Modal {
 	private priorities: PriorityLevel[];
 	private categories: Category[];
 	private blipRadius: number;
+	private blipFontSize: number;
 	private blipColor: string | undefined;
 	private options: CustomizeRadarModalOptions;
 
@@ -51,6 +53,7 @@ export class CustomizeRadarModal extends Modal {
 			.map((c) => ({ ...c }))
 			.sort((a, b) => (a.startAngle - 90 + 360) % 360 - (b.startAngle - 90 + 360) % 360);
 		this.blipRadius = radarData.blipRadius;
+		this.blipFontSize = radarData.blipFontSize;
 		this.blipColor = radarData.blipColor;
 		this.options = options;
 	}
@@ -284,6 +287,20 @@ export class CustomizeRadarModal extends Modal {
 					.onChange((value) => {
 						this.blipRadius = value;
 						this.options.onBlipRadiusChanged(value);
+					})
+			);
+
+		new Setting(container)
+			.setName("Blip font size")
+			.setDesc(`Font size for blip labels in pixels (${MIN_BLIP_FONT_SIZE}-${MAX_BLIP_FONT_SIZE})`)
+			.addSlider((slider) =>
+				slider
+					.setLimits(MIN_BLIP_FONT_SIZE, MAX_BLIP_FONT_SIZE, 1)
+					.setValue(this.blipFontSize)
+					.setDynamicTooltip()
+					.onChange((value) => {
+						this.blipFontSize = value;
+						this.options.onBlipFontSizeChanged(value);
 					})
 			);
 

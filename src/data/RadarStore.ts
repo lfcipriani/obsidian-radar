@@ -11,6 +11,9 @@ import {
 	DEFAULT_BLIP_RADIUS,
 	MIN_BLIP_RADIUS,
 	MAX_BLIP_RADIUS,
+	DEFAULT_BLIP_FONT_SIZE,
+	MIN_BLIP_FONT_SIZE,
+	MAX_BLIP_FONT_SIZE,
 	RADAR_FILE_EXTENSION,
 	CSS_VAR_TO_HEX,
 } from "../constants";
@@ -27,6 +30,7 @@ export class RadarStore {
 			priorityLevels: [...DEFAULT_PRIORITIES],
 			categories: [...DEFAULT_CATEGORIES],
 			blipRadius: DEFAULT_BLIP_RADIUS,
+			blipFontSize: DEFAULT_BLIP_FONT_SIZE,
 			blips: [],
 		};
 	}
@@ -73,6 +77,7 @@ export class RadarStore {
 			priorityLevels,
 			categories,
 			blipRadius: this.normalizeBlipRadius(data.blipRadius),
+			blipFontSize: this.normalizeBlipFontSize(data.blipFontSize),
 			blipColor: this.normalizeColor(data.blipColor),
 			blips: (data.blips ?? []).map((b) => ({ ...b, color: this.normalizeColor(b.color) })),
 		};
@@ -148,6 +153,13 @@ export class RadarStore {
 	}
 
 	/**
+	 * Update the radar's blip font size
+	 */
+	setBlipFontSize(radar: RadarData, blipFontSize: number): void {
+		radar.blipFontSize = this.normalizeBlipFontSize(blipFontSize);
+	}
+
+	/**
 	 * Update the radar's default blip color
 	 */
 	setBlipColor(radar: RadarData, color: string | undefined): void {
@@ -159,6 +171,13 @@ export class RadarStore {
 			return DEFAULT_BLIP_RADIUS;
 		}
 		return Math.max(MIN_BLIP_RADIUS, Math.min(MAX_BLIP_RADIUS, blipRadius));
+	}
+
+	private normalizeBlipFontSize(blipFontSize: number | undefined): number {
+		if (typeof blipFontSize !== "number" || Number.isNaN(blipFontSize)) {
+			return DEFAULT_BLIP_FONT_SIZE;
+		}
+		return Math.max(MIN_BLIP_FONT_SIZE, Math.min(MAX_BLIP_FONT_SIZE, blipFontSize));
 	}
 
 	/**

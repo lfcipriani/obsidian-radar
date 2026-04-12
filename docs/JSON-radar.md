@@ -15,6 +15,7 @@ Files use the `.radar` extension and are stored in the Obsidian vault like any o
   "priorityLevels": [...],
   "categories": [...],
   "blipRadius": 5,
+  "blipFontSize": 7,
   "blipColor": "#027aff",
   "blips": [...]
 }
@@ -25,6 +26,7 @@ Files use the `.radar` extension and are stored in the Obsidian vault like any o
 | `priorityLevels` | array | yes | Concentric rings defining priority zones |
 | `categories` | array | yes | Angular segments dividing the radar |
 | `blipRadius` | number | yes | Radius of all blip circles in pixels |
+| `blipFontSize` | number | yes | Font size for blip labels in pixels |
 | `blipColor` | string | no | Default blip color (hex). Should fall back to a default color if absent. |
 | `blips` | array | yes | Items placed on the radar |
 
@@ -122,6 +124,10 @@ Any valid hex color may be stored. Color fields are optional throughout; when ab
 
 `blipRadius` is an integer (or float) number of pixels applied to all blip circles. Valid range: `3`–`20`. Default: `5`.
 
+## Blip font size
+
+`blipFontSize` is an integer (or float) number of pixels applied to all blip labels. Valid range: `3`–`12`. Default: `7`.
+
 ## Complete example
 
 ```json
@@ -139,6 +145,7 @@ Any valid hex color may be stored. Color fields are optional throughout; when ab
     { "id": "c4", "name": "Retire",  "startAngle": 0    }
   ],
   "blipRadius": 6,
+  "blipFontSize": 7,
   "blipColor": "#53dfdd",
   "blips": [
     {
