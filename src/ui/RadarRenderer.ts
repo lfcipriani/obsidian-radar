@@ -23,6 +23,7 @@ export class RadarRenderer {
 	private svg: SVGSVGElement;
 	private defsEl: SVGDefsElement;
 	private backgroundGroup: SVGGElement;
+	private prioritySegmentsGroup: SVGGElement;
 	private segmentsGroup: SVGGElement;
 	private categoryGroup: SVGGElement;
 	private priorityLabelsGroup: SVGGElement;
@@ -44,6 +45,7 @@ export class RadarRenderer {
 		this.svg = createSvgContainer(SVG_CONFIG.viewBoxSize, "radar-svg");
 		this.defsEl = createSvgElement("defs", {});
 		this.backgroundGroup = createGroup("radar-background");
+		this.prioritySegmentsGroup = createGroup("radar-priority-segments");
 		this.segmentsGroup = createGroup("radar-category-segments");
 		this.categoryGroup = createGroup("radar-categories");
 		this.priorityLabelsGroup = createGroup("radar-priority-labels");
@@ -53,6 +55,7 @@ export class RadarRenderer {
 
 		this.svg.appendChild(this.defsEl);
 		this.svg.appendChild(this.backgroundGroup);
+		this.svg.appendChild(this.prioritySegmentsGroup);
 		this.svg.appendChild(this.segmentsGroup);
 		this.svg.appendChild(this.categoryGroup);
 		this.svg.appendChild(this.priorityLabelsGroup);
@@ -67,6 +70,7 @@ export class RadarRenderer {
 	 */
 	render(): void {
 		this.renderPriorityRings();
+		this.renderPrioritySegments();
 		this.renderCategorySegments();
 		this.renderCategoryDividers();
 		this.renderBlips();
@@ -117,6 +121,45 @@ export class RadarRenderer {
 				this.priorityLabelsGroup.appendChild(textEl);
 			}
 		}
+	}
+
+	/**
+	 * Render filled annulus segments for priority rings that have a color set
+	 */
+	private renderPrioritySegments(): void {
+		this.prioritySegmentsGroup.innerHTML = "";
+
+		const { center, maxRadius } = SVG_CONFIG;
+		const sorted = [...this.radarData.priorityLevels].sort((a, b) => a.maxRadius - b.maxRadius);
+
+		for (let i = 0; i < sorted.length; i++) {
+			const priority = sorted[i];
+			if (!priority?.color) continue;
+
+			const outerR = priority.maxRadius * maxRadius;
+			const innerR = i === 0 ? 0 : (sorted[i - 1]!.maxRadius * maxRadius);
+
+			const path = createSvgElement("path", {
+				d: this.buildAnnulusPath(center, center, outerR, innerR),
+				fill: priority.color,
+				"fill-opacity": "0.12",
+				"fill-rule": "evenodd",
+				class: "radar-priority-segment",
+			});
+			this.prioritySegmentsGroup.appendChild(path);
+		}
+	}
+
+	/**
+	 * Build an SVG path for an annulus (ring) between innerR and outerR.
+	 * Uses fill-rule: evenodd — draw outer circle then inner circle as a cut-out.
+	 * When innerR is 0, returns a plain filled circle path.
+	 */
+	private buildAnnulusPath(cx: number, cy: number, outerR: number, innerR: number): string {
+		const outerCircle = `M ${cx + outerR},${cy} A ${outerR},${outerR} 0 1,0 ${cx - outerR},${cy} A ${outerR},${outerR} 0 1,0 ${cx + outerR},${cy} Z`;
+		if (innerR <= 0) return outerCircle;
+		const innerCircle = `M ${cx + innerR},${cy} A ${innerR},${innerR} 0 1,0 ${cx - innerR},${cy} A ${innerR},${innerR} 0 1,0 ${cx + innerR},${cy} Z`;
+		return `${outerCircle} ${innerCircle}`;
 	}
 
 	/**

@@ -67,8 +67,10 @@ export class RadarStore {
 			.slice()
 			.map((c) => ({ ...c, color: this.normalizeColor(c.color) }))
 			.sort((a, b) => (a.startAngle - 90 + 360) % 360 - (b.startAngle - 90 + 360) % 360);
+		const priorityLevels = (data.priorityLevels ?? [...DEFAULT_PRIORITIES])
+			.map((p) => ({ ...p, color: this.normalizeColor(p.color) }));
 		return {
-			priorityLevels: data.priorityLevels ?? [...DEFAULT_PRIORITIES],
+			priorityLevels,
 			categories,
 			blipRadius: this.normalizeBlipRadius(data.blipRadius),
 			blipColor: this.normalizeColor(data.blipColor),

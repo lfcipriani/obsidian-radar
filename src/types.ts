@@ -32,6 +32,8 @@ export interface PriorityLevel {
 	name: string;
 	/** Maximum radius for this level (0-1, normalized) */
 	maxRadius: number;
+	/** Optional ring background color */
+	color?: string;
 }
 
 /** A category defines a segment of the radar */

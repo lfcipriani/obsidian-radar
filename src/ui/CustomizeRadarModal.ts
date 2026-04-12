@@ -85,6 +85,8 @@ export class CustomizeRadarModal extends Modal {
 		const rows: HTMLElement[] = [];
 
 		for (const priority of this.priorities) {
+			let resetBtnEl: HTMLElement | null = null;
+
 			const s = new Setting(container)
 				.addExtraButton((btn) => {
 					btn.setIcon("grip-vertical").setTooltip("Drag to reorder");
@@ -106,6 +108,17 @@ export class CustomizeRadarModal extends Modal {
 							this.options.onPrioritiesChanged([...this.priorities]);
 						})
 				)
+				.addExtraButton((btn) => {
+					resetBtnEl = btn.extraSettingsEl;
+					btn
+						.setIcon("rotate-ccw")
+						.setTooltip("Clear priority color")
+						.onClick(() => {
+							delete priority.color;
+							this.options.onPrioritiesChanged([...this.priorities]);
+							this.refresh();
+						});
+				})
 				.addExtraButton((btn) =>
 					btn
 						.setIcon("trash")
@@ -118,6 +131,21 @@ export class CustomizeRadarModal extends Modal {
 							this.refresh();
 						})
 				);
+
+			const swatchContainer = s.controlEl.createEl("div", { cls: "radar-color-swatches" });
+			this.fillColorSwatches(
+				swatchContainer,
+				priority.color,
+				(color) => {
+					priority.color = color;
+					this.options.onPrioritiesChanged([...this.priorities]);
+				},
+				() => this.refresh()
+			);
+			if (resetBtnEl) {
+				s.controlEl.insertBefore(swatchContainer, resetBtnEl);
+			}
+
 			rows.push(s.settingEl);
 		}
 
