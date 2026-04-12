@@ -14,7 +14,7 @@ import { AddBlipModal } from "./AddBlipModal";
 import { AddTextModal } from "./AddTextModal";
 import { CustomizeRadarModal } from "./CustomizeRadarModal";
 import { HelpModal } from "./HelpModal";
-import { rotateBlipsWithCategories } from "../utils/polarCoordinates";
+import { rotateBlipsWithCategories, repositionBlipsWithPriorities } from "../utils/polarCoordinates";
 
 export class RadarView extends TextFileView {
 	private plugin: RadarPlugin;
@@ -393,6 +393,7 @@ export class RadarView extends TextFileView {
 		new CustomizeRadarModal(this.app, this.radarData, {
 			onPrioritiesChanged: (levels) => {
 				if (!this.radarData) return;
+				repositionBlipsWithPriorities(this.radarData.blips, this.radarData.priorityLevels, levels);
 				this.plugin.radarStore.setPriorityLevels(this.radarData, levels);
 				this.renderer?.updateData(this.radarData);
 				this.requestSave();

@@ -114,6 +114,48 @@ export function getCategoryFromAngle(
 }
 
 /**
+ * Reposition blips so they follow their priority ring after a reorder or resize.
+ * Each blip's relative position within its old ring is preserved in the
+ * corresponding new ring. Mutates blips in place.
+ * If a priority was removed, its blips are left in place (r unchanged).
+ */
+export function repositionBlipsWithPriorities(
+	blips: Blip[],
+	oldPriorities: PriorityLevel[],
+	newPriorities: PriorityLevel[]
+): void {
+	if (oldPriorities.length === 0 || newPriorities.length === 0) return;
+
+	const oldSorted = [...oldPriorities].sort((a, b) => a.maxRadius - b.maxRadius);
+	const newSorted = [...newPriorities].sort((a, b) => a.maxRadius - b.maxRadius);
+
+	// Build map: id → { inner, outer } for new priorities
+	const newBoundsById = new Map<string, { inner: number; outer: number }>();
+	newSorted.forEach((p, i) => {
+		newBoundsById.set(p.id, {
+			inner: i === 0 ? 0 : newSorted[i - 1]!.maxRadius,
+			outer: p.maxRadius,
+		});
+	});
+
+	for (const blip of blips) {
+		const oldPriority = getPriorityFromRadius(blip.r, oldSorted);
+		if (!oldPriority) continue;
+
+		const newBounds = newBoundsById.get(oldPriority.id);
+		if (!newBounds) continue; // priority was removed; leave blip in place
+
+		const oldIdx = oldSorted.findIndex((p) => p.id === oldPriority.id);
+		const oldInner = oldIdx === 0 ? 0 : oldSorted[oldIdx - 1]!.maxRadius;
+		const oldSpan = oldPriority.maxRadius - oldInner;
+
+		const relativePos = oldSpan > 0 ? (blip.r - oldInner) / oldSpan : 0.5;
+		const newSpan = newBounds.outer - newBounds.inner;
+		blip.r = newBounds.inner + relativePos * newSpan;
+	}
+}
+
+/**
  * Rotate blips so they follow their categories after a reorder or resize.
  * Each blip's relative position within its old category segment is preserved
  * in the corresponding new segment. Mutates blips in place.
