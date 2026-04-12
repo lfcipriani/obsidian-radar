@@ -5,7 +5,7 @@
 Obsidian Radar is a plugin that allows users to visualize notes and text items as "blips" on a radar interface. Items closer to the center have higher priority. The radar is divided into concentric rings (priority levels) and segments (categories).
 
 - **Target**: Obsidian Community Plugin (TypeScript → bundled JavaScript)
-- **Entry point**: `src/main.ts` compiled to `main.js`
+- **Entry point**: `src/main.ts` compiled to `main.js` (lifecycle + vault event sync)
 - **File format**: Custom `.radar` files (JSON internally)
 - **Release artifacts**: `main.js`, `manifest.json`, `styles.css`
 
@@ -15,7 +15,7 @@ Obsidian Radar is a plugin that allows users to visualize notes and text items a
 - Priority: set of concentric circles that indicate the priority based on how close to center the blips are. User defined, can range from 1 to 7 priority levels, to avoid having too many circles in the radar.
 - Category: segments of the radar circle that can be used to group notes under a same category. User defined, can range from 0 (no categories) to 8, to avoid having sections that are too thin to have blips on it.
 - Blip positiong is done with polar coordinates: (r) radial distance in pixels, (theta) angle measured in degress, counterclockwise from the positive x-axis
-- **[agent/ARCHITECTURE.md](agent/ARCHITECTURE.md)**: Detailed architecture, data model, component structure, and data flow
+- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**: Detailed architecture, data model, component structure, and data flow
 
 ## Commands
 
@@ -30,39 +30,45 @@ npm run lint     # Run ESLint on src/
 
 ```
 src/
-├── main.ts                    # Plugin entry point (lifecycle only)
+├── main.ts                    # Plugin entry point (lifecycle + vault event sync)
 ├── settings.ts                # Plugin settings and settings tab
 ├── types.ts                   # TypeScript interfaces and types
 ├── constants.ts               # Default values and SVG configuration
 ├── commands/
-│   ├── index.ts               # Command registration
+│   ├── index.ts               # Command registration (9 commands)
 │   └── createRadar.ts         # Create new radar command
 ├── data/
 │   └── RadarStore.ts          # Data persistence layer
 ├── ui/
 │   ├── RadarView.ts           # Main view (extends TextFileView)
 │   ├── RadarRenderer.ts       # SVG rendering engine
-│   ├── RadarInteractions.ts   # Drag-and-drop, zoom handling
-│   ├── RadarToolbar.ts        # Toolbar with action buttons
+│   ├── RadarInteractions.ts   # Drag-and-drop, pan, zoom handling
+│   ├── RadarToolbar.ts        # Floating toolbar with action buttons
 │   ├── AddBlipModal.ts        # Modal for adding note blips
-│   └── AddTextModal.ts        # Modal for adding text blips
+│   ├── AddTextModal.ts        # Modal for adding text blips
+│   ├── CustomizeRadarModal.ts # Modal for priorities, categories, colors, blip size
+│   ├── EditBlipColorModal.ts  # Modal for per-blip color override
+│   └── HelpModal.ts           # Quick-reference help modal
 └── utils/
     ├── idGenerator.ts         # UUID generation
-    ├── polarCoordinates.ts    # Polar ↔ Cartesian math
-    └── svgHelpers.ts          # SVG element creation
+    ├── polarCoordinates.ts    # Polar ↔ Cartesian math + blip repositioning
+    └── svgHelpers.ts          # SVG element creation helpers
 ```
 
 ## Key concepts
 
-- **Blip**: An item on the radar (note or text) with polar coordinates
-- **Priority levels**: Concentric rings (1-7) indicating importance
-- **Categories**: Segments (0-8) for grouping blips
-- **Polar coordinates**: `r` (0-1 normalized radius), `theta` (degrees counterclockwise from 3 o'clock)
+- **Blip**: An item on the radar. Type `"note"` links to a vault file (rendered as a solid dot); type `"text"` is standalone (rendered as a hollow ring).
+- **Priority levels**: Concentric rings (1–8) indicating importance. Each level has a `maxRadius` (0–1 normalized) and an optional fill color.
+- **Categories**: Segments of the radar (3–8) for grouping blips. Each category has a `startAngle` in degrees and an optional fill color.
+- **Polar coordinates**: `r` (0–1 normalized radius, 0 = center), `theta` (degrees counterclockwise from 3 o'clock). Stored on each blip; converted to SVG Cartesian coords at render time.
+- **Blip colors**: Three-level fallback — per-blip `color` → radar-wide `blipColor` → CSS `--color-accent`. Priority levels and categories also have optional colors shown as low-opacity fills.
+- **Blip size**: `blipRadius` (3–20 px, default 5) applies to all blips in the radar. Configurable in `CustomizeRadarModal`.
+- **File sync**: `main.ts` listens to vault `rename` and `delete` events to keep `notePath` references on note blips current across all open and closed radar files.
 
 ## Coding conventions
 
 - TypeScript with `"strict": true`
-- Keep `main.ts` minimal (lifecycle only). Delegate logic to modules.
+- Keep `main.ts` minimal (lifecycle + vault events only). Delegate logic to modules.
 - Split files exceeding ~200-300 lines into smaller modules.
 - Bundle everything into `main.js` (no external runtime dependencies).
 - Prefer `async/await` over promise chains.
@@ -71,7 +77,7 @@ src/
 ## Agent guidelines
 
 **Do**
-- Follow the architecture in `agent/ARCHITECTURE.md`
+- Follow the architecture in `docs/ARCHITECTURE.md`
 - Add commands with stable IDs (don't rename once released)
 - Write idempotent code paths so reload/unload doesn't leak listeners
 
@@ -90,14 +96,6 @@ src/
 - **ALWAYS ask for explicit permission before pushing** - every single time
 - Previous consent does NOT carry forward
 - When in doubt, ASK
-
-## Testing
-
-Copy `main.js`, `manifest.json`, `styles.css` to:
-```
-<Vault>/.obsidian/plugins/obsidian-radar/
-```
-Reload Obsidian and enable in **Settings → Community plugins**.
 
 ## References
 
