@@ -12,6 +12,7 @@ import {
 	MIN_BLIP_RADIUS,
 	MAX_BLIP_RADIUS,
 	RADAR_FILE_EXTENSION,
+	CSS_VAR_TO_HEX,
 } from "../constants";
 import { generateId } from "../utils/idGenerator";
 
@@ -62,13 +63,22 @@ export class RadarStore {
 	}
 
 	normalizeRadarData(data: Partial<RadarData>): RadarData {
+		const categories = (data.categories ?? [...DEFAULT_CATEGORIES])
+			.slice()
+			.map((c) => ({ ...c, color: this.normalizeColor(c.color) }))
+			.sort((a, b) => (a.startAngle - 90 + 360) % 360 - (b.startAngle - 90 + 360) % 360);
 		return {
 			priorityLevels: data.priorityLevels ?? [...DEFAULT_PRIORITIES],
-			categories: data.categories ?? [...DEFAULT_CATEGORIES],
+			categories,
 			blipRadius: this.normalizeBlipRadius(data.blipRadius),
-			blipColor: data.blipColor,
-			blips: data.blips ?? [],
+			blipColor: this.normalizeColor(data.blipColor),
+			blips: (data.blips ?? []).map((b) => ({ ...b, color: this.normalizeColor(b.color) })),
 		};
+	}
+
+	private normalizeColor(color: string | undefined): string | undefined {
+		if (!color) return undefined;
+		return CSS_VAR_TO_HEX[color] ?? color;
 	}
 
 	/**

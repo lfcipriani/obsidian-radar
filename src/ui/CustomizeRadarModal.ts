@@ -12,13 +12,13 @@ const MAX_PRIORITY_LEVELS = 8;
 const MAX_CATEGORIES = 8;
 
 const PRESET_COLORS = [
-	"var(--color-red)",
-	"var(--color-orange)",
-	"var(--color-yellow)",
-	"var(--color-green)",
-	"var(--color-cyan)",
-	"var(--color-blue)",
-	"var(--color-purple)",
+	"#fb464c",
+	"#e9973f",
+	"#e0ac00",
+	"#44cf6e",
+	"#53dfdd",
+	"#027aff",
+	"#a882ff",
 ];
 const MAX_PRIORITY_NAME_LENGTH = 15;
 const MAX_CATEGORY_NAME_LENGTH = 35;
@@ -47,7 +47,9 @@ export class CustomizeRadarModal extends Modal {
 		super(app);
 		// Work on deep copies so cancel doesn't affect live data
 		this.priorities = radarData.priorityLevels.map((p) => ({ ...p }));
-		this.categories = radarData.categories.map((c) => ({ ...c }));
+		this.categories = radarData.categories
+			.map((c) => ({ ...c }))
+			.sort((a, b) => (a.startAngle - 90 + 360) % 360 - (b.startAngle - 90 + 360) % 360);
 		this.blipRadius = radarData.blipRadius;
 		this.blipColor = radarData.blipColor;
 		this.options = options;
@@ -143,7 +145,7 @@ export class CustomizeRadarModal extends Modal {
 	private renderCategoriesSection(container: HTMLElement): void {
 		container.createEl("h3", { text: "Categories" });
 		container.createEl("p", {
-			text: "Segments that divide the radar, like topics or teams. Each blip belongs to one segment.",
+			text: "Segments that divide the radar. Each blip belongs to one segment. Renderization starts at 90 degree angle and goes counter-clockwise",
 			cls: "radar-modal-section-desc",
 		});
 
@@ -294,7 +296,7 @@ export class CustomizeRadarModal extends Modal {
 		onChange: (color: string) => void,
 		onCommit: () => void
 	): void {
-		const isCustom = currentColor !== undefined && !currentColor.startsWith("var(");
+		const isCustom = currentColor !== undefined && !PRESET_COLORS.includes(currentColor);
 
 		for (const colorVar of PRESET_COLORS) {
 			const swatch = container.createEl("div", { cls: "radar-color-swatch" });
@@ -386,9 +388,7 @@ export class CustomizeRadarModal extends Modal {
 		if (n === 0) return;
 		const step = 360 / n;
 		this.categories.forEach((c, i) => {
-			let angle = 90 - i * step;
-			if (angle < 0) angle += 360;
-			c.startAngle = angle;
+			c.startAngle = (90 + i * step) % 360;
 		});
 	}
 }

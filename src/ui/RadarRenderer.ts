@@ -130,7 +130,7 @@ export class RadarRenderer {
 
 		if (categories.length === 0) return;
 
-		const sorted = [...categories].sort((a, b) => a.startAngle - b.startAngle);
+		const sorted = [...categories].sort((a, b) => (a.startAngle - 90 + 360) % 360 - (b.startAngle - 90 + 360) % 360);
 
 		for (let i = 0; i < sorted.length; i++) {
 			const cat = sorted[i];
@@ -247,7 +247,7 @@ export class RadarRenderer {
 	 * Get the next category in sequence
 	 */
 	private getNextCategory(current: { startAngle: number }): { startAngle: number } | undefined {
-		const sorted = [...this.radarData.categories].sort((a, b) => a.startAngle - b.startAngle);
+		const sorted = [...this.radarData.categories].sort((a, b) => (a.startAngle - 90 + 360) % 360 - (b.startAngle - 90 + 360) % 360);
 		const currentIndex = sorted.findIndex((c) => c.startAngle === current.startAngle);
 		if (currentIndex === -1 || currentIndex === sorted.length - 1) {
 			return sorted[0];

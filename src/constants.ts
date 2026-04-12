@@ -19,13 +19,24 @@ export const DEFAULT_PRIORITIES: PriorityLevel[] = [
 	{ id: "p4", name: "Low", maxRadius: 1.0 },
 ];
 
-/** Default categories (4 unnamed segments, starting at top going clockwise) */
+/** Default categories (4 unnamed segments, starting at top going counterclockwise) */
 export const DEFAULT_CATEGORIES: Category[] = [
 	{ id: "c1", name: "", startAngle: 90 },
-	{ id: "c2", name: "", startAngle: 0 },
+	{ id: "c2", name: "", startAngle: 180 },
 	{ id: "c3", name: "", startAngle: 270 },
-	{ id: "c4", name: "", startAngle: 180 },
+	{ id: "c4", name: "", startAngle: 0 },
 ];
+
+/** Mapping from Obsidian CSS color variables to hex values for portable storage */
+export const CSS_VAR_TO_HEX: Record<string, string> = {
+	"var(--color-red)": "#fb464c",
+	"var(--color-orange)": "#e9973f",
+	"var(--color-yellow)": "#e0ac00",
+	"var(--color-green)": "#44cf6e",
+	"var(--color-cyan)": "#53dfdd",
+	"var(--color-blue)": "#027aff",
+	"var(--color-purple)": "#a882ff",
+};
 
 /** Default plugin settings */
 export const DEFAULT_SETTINGS: RadarPluginSettings = {
