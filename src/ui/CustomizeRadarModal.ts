@@ -78,7 +78,7 @@ export class CustomizeRadarModal extends Modal {
 	private renderPrioritiesSection(container: HTMLElement): void {
 		container.createEl("h3", { text: "Priority levels" });
 		container.createEl("p", {
-			text: "Concentric rings of the radar. The innermost ring is the highest priority; outer rings are lower.",
+			text: "Concentric rings of the radar. The innermost ring is the highest priority; outer rings are lower. Moving or adding levels will keep the blips in their right priorities.",
 			cls: "radar-modal-section-desc",
 		});
 
@@ -173,7 +173,7 @@ export class CustomizeRadarModal extends Modal {
 	private renderCategoriesSection(container: HTMLElement): void {
 		container.createEl("h3", { text: "Categories" });
 		container.createEl("p", {
-			text: "Segments that divide the radar. Each blip belongs to one segment. Renderization starts at 90 degree angle and goes counter-clockwise",
+			text: "Segments that divide the radar. Moving or adding categories will keep the blips in their right category. Renderization starts at 90 degree angle and goes counter-clockwise.",
 			cls: "radar-modal-section-desc",
 		});
 
