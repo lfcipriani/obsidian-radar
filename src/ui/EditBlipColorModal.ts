@@ -4,9 +4,10 @@
  */
 
 import { App, Modal, Setting } from "obsidian";
+import { fillColorSwatches } from "../utils/colorSwatches";
 
 export class EditBlipColorModal extends Modal {
-	private color: string;
+	private color: string | undefined;
 	private onSubmit: (color: string | undefined) => void;
 
 	constructor(
@@ -15,7 +16,7 @@ export class EditBlipColorModal extends Modal {
 		onSubmit: (color: string | undefined) => void
 	) {
 		super(app);
-		this.color = initialColor ?? "#6c8ebf";
+		this.color = initialColor;
 		this.onSubmit = onSubmit;
 	}
 
@@ -24,35 +25,35 @@ export class EditBlipColorModal extends Modal {
 
 		contentEl.createEl("h2", { text: "Edit blip color" });
 
-		new Setting(contentEl)
+		let resetBtnEl: HTMLElement | null = null;
+		const colorSetting = new Setting(contentEl)
 			.setName("Color")
-			.addColorPicker((picker) =>
-				picker.setValue(this.color).onChange((value) => {
-					this.color = value;
-				})
-			);
-
-		new Setting(contentEl)
-			.addButton((btn) =>
+			.setDesc("Override color for this blip (uses radar default when unset)")
+			.addExtraButton((btn) => {
+				resetBtnEl = btn.extraSettingsEl;
 				btn
-					.setButtonText("Save")
-					.setCta()
+					.setIcon("rotate-ccw")
+					.setTooltip("Clear blip color")
 					.onClick(() => {
+						this.color = undefined;
+						this.onSubmit(undefined);
 						this.close();
-						this.onSubmit(this.color);
-					})
-			)
-			.addButton((btn) =>
-				btn.setButtonText("Clear color").onClick(() => {
-					this.close();
-					this.onSubmit(undefined);
-				})
-			)
-			.addButton((btn) =>
-				btn.setButtonText("Cancel").onClick(() => {
-					this.close();
-				})
-			);
+					});
+			});
+
+		const swatchContainer = colorSetting.controlEl.createEl("div", { cls: "radar-color-swatches" });
+		fillColorSwatches(
+			swatchContainer,
+			this.color,
+			(color) => { this.color = color; },
+			() => {
+				this.onSubmit(this.color);
+				this.close();
+			}
+		);
+		if (resetBtnEl) {
+			colorSetting.controlEl.insertBefore(swatchContainer, resetBtnEl);
+		}
 	}
 
 	onClose(): void {

@@ -14,6 +14,7 @@ import { AddBlipModal } from "./AddBlipModal";
 import { AddTextModal } from "./AddTextModal";
 import { CustomizeRadarModal } from "./CustomizeRadarModal";
 import { HelpModal } from "./HelpModal";
+import { EditBlipColorModal } from "./EditBlipColorModal";
 import { rotateBlipsWithCategories, repositionBlipsWithPriorities } from "../utils/polarCoordinates";
 
 export class RadarView extends TextFileView {
@@ -229,6 +230,20 @@ export class RadarView extends TextFileView {
 					.onClick(() => void this.createNoteFromBlip(blip))
 			);
 		}
+
+		menu.addItem((item) =>
+			item
+				.setTitle("Edit color")
+				.setIcon("palette")
+				.onClick(() => {
+					new EditBlipColorModal(this.app, blip.color, (color) => {
+						if (!this.radarData) return;
+						this.plugin.radarStore.updateBlip(this.radarData, blipId, { color });
+						this.renderer?.updateData(this.radarData);
+						this.requestSave();
+					}).open();
+				})
+		);
 
 		menu.addItem((item) =>
 			item

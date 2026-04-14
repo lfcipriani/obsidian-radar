@@ -7,19 +7,11 @@ import { App, Modal, Setting } from "obsidian";
 import type { RadarData, PriorityLevel, Category } from "../types";
 import { generateId } from "../utils/idGenerator";
 import { MAX_BLIP_RADIUS, MIN_BLIP_RADIUS, MAX_BLIP_FONT_SIZE, MIN_BLIP_FONT_SIZE } from "../constants";
+import { fillColorSwatches } from "../utils/colorSwatches";
 
 const MAX_PRIORITY_LEVELS = 8;
 const MAX_CATEGORIES = 8;
 
-const PRESET_COLORS = [
-	"#fb464c",
-	"#e9973f",
-	"#e0ac00",
-	"#44cf6e",
-	"#53dfdd",
-	"#027aff",
-	"#a882ff",
-];
 const MAX_PRIORITY_NAME_LENGTH = 15;
 const MAX_CATEGORY_NAME_LENGTH = 35;
 const MIN_PRIORITY_LEVELS = 1;
@@ -136,7 +128,7 @@ export class CustomizeRadarModal extends Modal {
 				);
 
 			const swatchContainer = s.controlEl.createEl("div", { cls: "radar-color-swatches" });
-			this.fillColorSwatches(
+			fillColorSwatches(
 				swatchContainer,
 				priority.color,
 				(color) => {
@@ -232,7 +224,7 @@ export class CustomizeRadarModal extends Modal {
 
 			// Insert color swatches before the reset button
 			const swatchContainer = s.controlEl.createEl("div", { cls: "radar-color-swatches" });
-			this.fillColorSwatches(
+			fillColorSwatches(
 				swatchContainer,
 				category.color,
 				(color) => {
@@ -321,7 +313,7 @@ export class CustomizeRadarModal extends Modal {
 			});
 
 		const swatchContainer = colorSetting.controlEl.createEl("div", { cls: "radar-color-swatches" });
-		this.fillColorSwatches(
+		fillColorSwatches(
 			swatchContainer,
 			this.blipColor,
 			(color) => {
@@ -333,52 +325,6 @@ export class CustomizeRadarModal extends Modal {
 		if (resetBtnEl) {
 			colorSetting.controlEl.insertBefore(swatchContainer, resetBtnEl);
 		}
-	}
-
-	private fillColorSwatches(
-		container: HTMLElement,
-		currentColor: string | undefined,
-		onChange: (color: string) => void,
-		onCommit: () => void
-	): void {
-		const isCustom = currentColor !== undefined && !PRESET_COLORS.includes(currentColor);
-
-		for (const colorVar of PRESET_COLORS) {
-			const swatch = container.createEl("div", { cls: "radar-color-swatch" });
-			swatch.style.background = colorVar;
-			if (currentColor === colorVar) {
-				swatch.addClass("radar-color-swatch--selected");
-			}
-			swatch.addEventListener("click", () => {
-				onChange(colorVar);
-				onCommit();
-			});
-		}
-
-		// Custom color swatch — opens native color picker
-		const customSwatch = container.createEl("div", { cls: "radar-color-swatch radar-color-swatch--custom" });
-		if (isCustom) {
-			customSwatch.addClass("radar-color-swatch--selected");
-		}
-
-		const colorInput = customSwatch.createEl("input", {
-			cls: "radar-color-swatch-input",
-			attr: { type: "color" },
-		});
-		if (isCustom && currentColor) {
-			colorInput.value = currentColor;
-		}
-
-		colorInput.addEventListener("input", (e) => {
-			onChange((e.target as HTMLInputElement).value);
-		});
-		colorInput.addEventListener("change", () => {
-			onCommit();
-		});
-
-		customSwatch.addEventListener("click", (e) => {
-			if (e.target !== colorInput) colorInput.click();
-		});
 	}
 
 	private setupDragAndDrop(rows: HTMLElement[], onReorder: (from: number, to: number) => void): void {
