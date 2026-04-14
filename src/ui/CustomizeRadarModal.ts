@@ -284,7 +284,7 @@ export class CustomizeRadarModal extends Modal {
 
 		new Setting(container)
 			.setName("Blip font size")
-			.setDesc(`Font size for blip labels in pixels (${MIN_BLIP_FONT_SIZE}-${MAX_BLIP_FONT_SIZE})`)
+			.setDesc(`Font size for blip names in pixels (${MIN_BLIP_FONT_SIZE}-${MAX_BLIP_FONT_SIZE})`)
 			.addSlider((slider) =>
 				slider
 					.setLimits(MIN_BLIP_FONT_SIZE, MAX_BLIP_FONT_SIZE, 1)

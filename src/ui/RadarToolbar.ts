@@ -60,13 +60,13 @@ export class RadarToolbar {
 		if (!this.titlesBtn) return;
 		if (mode === "crop") {
 			setIcon(this.titlesBtn, "eye-off");
-			setTooltip(this.titlesBtn, "Hide titles", { placement: "left", delay: 500 });
+			setTooltip(this.titlesBtn, "Hide names", { placement: "left", delay: 500 });
 		} else if (mode === "hidden") {
 			setIcon(this.titlesBtn, "eye");
-			setTooltip(this.titlesBtn, "Show full titles", { placement: "left", delay: 500 });
+			setTooltip(this.titlesBtn, "Show full names", { placement: "left", delay: 500 });
 		} else {
 			setIcon(this.titlesBtn, "scan-eye");
-			setTooltip(this.titlesBtn, "Crop titles", { placement: "left", delay: 500 });
+			setTooltip(this.titlesBtn, "Crop names", { placement: "left", delay: 500 });
 		}
 	}
 
