@@ -23,8 +23,6 @@ export class EditBlipColorModal extends Modal {
 	onOpen(): void {
 		const { contentEl } = this;
 
-		contentEl.createEl("h2", { text: "Edit blip color" });
-
 		let resetBtnEl: HTMLElement | null = null;
 		const colorSetting = new Setting(contentEl)
 			.setName("Color")
