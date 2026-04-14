@@ -79,12 +79,6 @@ export default class RadarPlugin extends Plugin {
 		});
 	}
 
-	onunload(): void {
-		for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_RADAR)) {
-			leaf.detach();
-		}
-	}
-
 	async loadSettings(): Promise<void> {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<RadarPluginSettings>);
 	}
