@@ -1,7 +1,7 @@
 {
 	"name": "obsidian-radar",
 	"version": "0.9.0",
-	"description": "Organize your notes or thoughts on a radar. Prioritize initiatives, keep your focus under control, cope with dealing with multiple topics in parallel.",
+	"description": "Visualize your notes and ideas on a radar. Group them by topic, prioritize by proximity to the center, and keep focus when juggling multiple areas at once. Do not lose sight of items that might be hiding good opportunities.",
 	"main": "main.js",
 	"type": "module",
 	"scripts": {
