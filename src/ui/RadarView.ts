@@ -91,6 +91,7 @@ export class RadarView extends TextFileView {
 	}
 
 	async onOpen(): Promise<void> {
+		await super.onOpen();
 		const container = this.contentEl;
 		container.empty();
 		container.addClass("radar-view-container");
@@ -123,6 +124,19 @@ export class RadarView extends TextFileView {
 	async onClose(): Promise<void> {
 		this.clear();
 		this.toolbar = null;
+		await super.onClose();
+	}
+
+	/**
+	 * Called by Obsidian when the file backing this view is renamed.
+	 * Required to avoid a console error from TextFileView.
+	 */
+	handleRename(newPath: string, _oldPath: string): void {
+		if (this.file?.path === newPath) {
+			// getDisplayText() already reads from this.file, which Obsidian
+			// has already updated before calling handleRename, so nothing extra
+			// is needed here — the header title refreshes automatically.
+		}
 	}
 
 	/**
