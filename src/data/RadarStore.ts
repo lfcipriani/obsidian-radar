@@ -3,7 +3,7 @@
  * Handles persistence of radar data to JSON files in the vault
  */
 
-import { App, TFile, TFolder } from "obsidian";
+import { App, TFile, TFolder, normalizePath } from "obsidian";
 import type { RadarData, Blip, PriorityLevel, Category } from "../types";
 import {
 	DEFAULT_PRIORITIES,
@@ -42,7 +42,7 @@ export class RadarStore {
 		const radarData = this.createNewRadarData();
 		const fileName = `${name}.${RADAR_FILE_EXTENSION}`;
 		const basePath = folder ? folder.path : "";
-		const path = basePath ? `${basePath}/${fileName}` : fileName;
+		const path = normalizePath(basePath ? `${basePath}/${fileName}` : fileName);
 
 		const content = JSON.stringify(radarData, null, 2);
 		const file = await this.app.vault.create(path, content);

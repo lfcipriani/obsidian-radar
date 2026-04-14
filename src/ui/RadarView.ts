@@ -3,7 +3,7 @@
  * TextFileView subclass for displaying and interacting with a radar
  */
 
-import { TextFileView, WorkspaceLeaf, Menu, TFile } from "obsidian";
+import { TextFileView, WorkspaceLeaf, Menu, TFile, normalizePath } from "obsidian";
 import type RadarPlugin from "../main";
 import type { RadarData, Blip, ViewState, TitleMode } from "../types";
 import { VIEW_TYPE_RADAR, SVG_CONFIG, DEFAULT_VIEW_STATE } from "../constants";
@@ -531,7 +531,7 @@ export class RadarView extends TextFileView {
 	private async createNoteFromBlip(blip: Blip): Promise<void> {
 		if (!this.radarData) return;
 
-		const fileName = `${blip.title}.md`;
+		const fileName = normalizePath(`${blip.title}.md`);
 		let file: TFile;
 
 		const existing = this.app.vault.getAbstractFileByPath(fileName);
