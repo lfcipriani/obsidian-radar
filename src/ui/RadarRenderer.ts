@@ -142,8 +142,6 @@ export class RadarRenderer {
 			const path = createSvgElement("path", {
 				d: this.buildAnnulusPath(center, center, outerR, innerR),
 				fill: priority.color,
-				"fill-opacity": "0.12",
-				"fill-rule": "evenodd",
 				class: "radar-priority-segment",
 			});
 			this.prioritySegmentsGroup.appendChild(path);
@@ -185,7 +183,7 @@ export class RadarRenderer {
 			if (sweepAngle <= 0) sweepAngle += 360;
 
 			const path = this.buildArcPath(center, center, maxRadius, cat.startAngle, sweepAngle);
-			path.setCssProps({ fill: cat.color, "fill-opacity": "0.12" });
+			path.setCssProps({ fill: cat.color });
 			path.setAttribute("class", "radar-category-segment");
 			this.segmentsGroup.appendChild(path);
 		}
@@ -264,6 +262,7 @@ export class RadarRenderer {
 		const pathId = `radar-category-label-path-${category.id}`;
 		const path = createSvgElement("path", {
 			id: pathId,
+			class: "radar-category-label-arc",
 			d: this.buildOpenArcPath(
 				center,
 				center,
@@ -271,7 +270,6 @@ export class RadarRenderer {
 				shouldReverseForReadableText ? category.startAngle + sweepAngle : category.startAngle,
 				shouldReverseForReadableText ? -sweepAngle : sweepAngle
 			),
-			fill: "none",
 		});
 		const text = createSvgElement("text", {
 			class: "radar-category-label",

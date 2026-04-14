@@ -97,6 +97,12 @@
 	stroke-width: 1;
 }
 
+.radar-priority-segment {
+	fill-opacity: 0.12;
+	fill-rule: evenodd;
+	pointer-events: none;
+}
+
 .radar-priority-label {
 	font-size: 8px;
 	fill: var(--text-muted);
@@ -121,6 +127,11 @@
 .radar-category-label textPath {
 	text-anchor: middle;
 	dominant-baseline: middle;
+}
+
+.radar-category-label-arc {
+	fill: none;
+	pointer-events: none;
 }
 
 /* Customize modal drag-and-drop */
@@ -234,6 +245,7 @@
 
 /* Category segment fills */
 .radar-category-segment {
+	fill-opacity: 0.12;
 	pointer-events: none;
 }
 
