@@ -3,7 +3,7 @@
  * An Obsidian plugin for creating radar visualizations to track notes and items
  */
 
-import { Plugin, TFile, TAbstractFile, WorkspaceLeaf } from "obsidian";
+import { Plugin, TFile, TFolder, TAbstractFile, WorkspaceLeaf, Menu } from "obsidian";
 import { RadarPluginSettings, DEFAULT_SETTINGS, RadarSettingTab } from "./settings";
 import { VIEW_TYPE_RADAR, RADAR_FILE_EXTENSION } from "./constants";
 import { RadarView } from "./ui/RadarView";
@@ -37,6 +37,28 @@ export default class RadarPlugin extends Plugin {
 			const { createRadarCommand } = await import("./commands/createRadar");
 			await createRadarCommand(this);
 		});
+
+		// Add "New Radar" to the file-explorer context menu
+		this.registerEvent(
+			this.app.workspace.on("file-menu", (menu: Menu, file: TAbstractFile, source: string) => {
+				if (source !== "file-explorer-context-menu") return;
+
+				const folder = file instanceof TFolder ? file : file.parent ?? undefined;
+
+				menu.addItem((item) =>
+					item
+						.setSection('action-primary')
+						.setTitle("New radar")
+						.setIcon("radar")
+						.onClick(() => {
+							void (async () => {
+								const { createRadarCommand } = await import("./commands/createRadar");
+								await createRadarCommand(this, folder instanceof TFolder ? folder : undefined);
+							})();
+						})
+				);
+			})
+		);
 
 		// Keep note blip references in sync when files are renamed or moved
 		this.registerEvent(

@@ -30,10 +30,11 @@ function getUntitledName(plugin: RadarPlugin): string {
 	return `${baseName} ${counter}`;
 }
 
-export async function createRadarCommand(plugin: RadarPlugin): Promise<void> {
-	// Get the active folder or use root
+export async function createRadarCommand(plugin: RadarPlugin, targetFolder?: TFolder): Promise<void> {
+	// Use the explicitly supplied folder, or fall back to the active file's parent
 	const activeFile = plugin.app.workspace.getActiveFile();
-	const folder = activeFile?.parent instanceof TFolder ? activeFile.parent : null;
+	const folder = targetFolder
+		?? (activeFile?.parent instanceof TFolder ? activeFile.parent : null);
 
 	// Generate untitled name
 	const name = getUntitledName(plugin);
