@@ -4,7 +4,15 @@
 
 Visualize your notes and ideas on a radar. Group them by topic, prioritize by proximity to the center, and keep focus when juggling multiple areas at once. Do not lose sight of items that might be hiding good opportunities.
 
-__Screenshot__
+![Sample: Project Focus](docs/radar-sample-project-focus.png)
+
+You can use it to:
+
+- Prioritize your initiatives
+- Technology Radar
+- Einsenhower Matrix
+
+![Sample: Quadrant view](docs/radar-sample-zoomed.png)
 
 ## Features
 
@@ -71,4 +79,5 @@ Please open an issue before starting work on a large change so we can discuss th
 --- 
 
 [![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://buymeacoffee.com/lfcipriani)
+
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/lfcipriani?style=social)](https://github.com/sponsors/lfcipriani)
