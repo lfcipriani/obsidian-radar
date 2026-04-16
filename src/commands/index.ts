@@ -10,14 +10,14 @@ import { RadarView } from "../ui/RadarView";
 export function registerCommands(plugin: RadarPlugin): void {
 	// Create new radar
 	plugin.addCommand({
-		id: "radar:create",
+		id: "create",
 		name: "Create new",
 		callback: () => createRadarCommand(plugin),
 	});
 
 	// View-scoped commands — only active when a radar view is focused
 	plugin.addCommand({
-		id: "radar:add-note-blip",
+		id: "add-note-blip",
 		name: "Add note blip",
 		checkCallback: (checking) => {
 			const view = plugin.app.workspace.getActiveViewOfType(RadarView);
@@ -28,7 +28,7 @@ export function registerCommands(plugin: RadarPlugin): void {
 	});
 
 	plugin.addCommand({
-		id: "radar:add-text-blip",
+		id: "add-text-blip",
 		name: "Add text blip",
 		checkCallback: (checking) => {
 			const view = plugin.app.workspace.getActiveViewOfType(RadarView);
@@ -39,7 +39,7 @@ export function registerCommands(plugin: RadarPlugin): void {
 	});
 
 	plugin.addCommand({
-		id: "radar:zoom-in",
+		id: "zoom-in",
 		name: "Zoom in",
 		checkCallback: (checking) => {
 			const view = plugin.app.workspace.getActiveViewOfType(RadarView);
@@ -50,7 +50,7 @@ export function registerCommands(plugin: RadarPlugin): void {
 	});
 
 	plugin.addCommand({
-		id: "radar:zoom-out",
+		id: "zoom-out",
 		name: "Zoom out",
 		checkCallback: (checking) => {
 			const view = plugin.app.workspace.getActiveViewOfType(RadarView);
@@ -61,7 +61,7 @@ export function registerCommands(plugin: RadarPlugin): void {
 	});
 
 	plugin.addCommand({
-		id: "radar:zoom-reset",
+		id: "zoom-reset",
 		name: "Reset zoom",
 		checkCallback: (checking) => {
 			const view = plugin.app.workspace.getActiveViewOfType(RadarView);
@@ -72,7 +72,7 @@ export function registerCommands(plugin: RadarPlugin): void {
 	});
 
 	plugin.addCommand({
-		id: "radar:toggle-titles",
+		id: "toggle-titles",
 		name: "Toggle titles",
 		checkCallback: (checking) => {
 			const view = plugin.app.workspace.getActiveViewOfType(RadarView);
@@ -83,7 +83,7 @@ export function registerCommands(plugin: RadarPlugin): void {
 	});
 
 	plugin.addCommand({
-		id: "radar:toggle-glow",
+		id: "toggle-glow",
 		name: "Toggle glow",
 		checkCallback: (checking) => {
 			const view = plugin.app.workspace.getActiveViewOfType(RadarView);
@@ -94,7 +94,7 @@ export function registerCommands(plugin: RadarPlugin): void {
 	});
 
 	plugin.addCommand({
-		id: "radar:toggle-priority-labels",
+		id: "toggle-priority-labels",
 		name: "Toggle priority levels",
 		checkCallback: (checking) => {
 			const view = plugin.app.workspace.getActiveViewOfType(RadarView);
