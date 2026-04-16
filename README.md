@@ -10,10 +10,12 @@ Visualize your notes and ideas on a radar. Group them by topic, prioritize by pr
 
 - **Prioritize your initiatives** — quickly glance at what's important to focus on right now. Place active work near the center and keep an eye on what's on the horizon without losing track of it.
 - **Technology Radar** — communicate to your engineering team what technologies to adopt, trial, hold, or avoid, organized by category (languages, tools, platforms, techniques).
-- **Eisenhower Matrix** — map tasks across four quadrants by urgency and importance. Use 4 categories, combining urgent/not urgent, important/not important to cut through the noise.
 - **Personal knowledge management** — track topics you're actively researching, want to explore, or are letting go. Keep your curiosity organized without forcing every idea into a rigid hierarchy.
 - **Project portfolio** — maintain a bird's-eye view of all your projects. Spot which ones are drifting to the periphery before they stall out completely.
 
+Still not sure? Use the [skill](skills/obsidian-radar/SKILL.md) and ask your assistant in your vault to come up with an something. Here's a sample prompt:
+
+> Create a Radar file to prioritize my projects, available in the @Projects/ folder. The categories I want are Engineering, Marketing, Backkoffice and Product. For each note and based on their content, create a blip, put them on the right quadrant and suggest a priority level. Create the file as `focus.radar`.
 
 ![Sample: Quadrant view](docs/radar-sample-zoomed.png)
 
@@ -28,7 +30,7 @@ Visualize your notes and ideas on a radar. Group them by topic, prioritize by pr
 - **Customizable** — set colors per priority level, per category, and per blip; adjust blip size and label font size. Add new categories and priority levels without changing blip prioritization. Support multiple visualization modes.
 - **Command palette** — all major actions are available as commands so you can setup global keyboard shortcuts
 - **Mobile app supported**
-- **Support for AI Workflows**: use the [json-radar skill](skills/obsidian-radar/SKILL.md) to create and maintain radars from your Obsidian AI-enabled vault.
+- **Support for AI Workflows**: use the [obsidian-radar skill](skills/obsidian-radar/SKILL.md) to create and maintain radars from your Obsidian AI-enabled vault.
 
 ## JSON Radar Spec
 
