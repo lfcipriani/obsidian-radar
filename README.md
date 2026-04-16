@@ -1,30 +1,40 @@
 # Obsidian Radar
 
-*This plugin answers the question: "What's on your radar?"*
+*This plugin helps to answer the question: "What's on your radar?"*
 
 Visualize your notes and ideas on a radar. Group them by topic, prioritize by proximity to the center, and keep focus when juggling multiple areas at once. Do not lose sight of items that might be hiding good opportunities.
 
 ![Sample: Project Focus](docs/radar-sample-project-focus.png)
 
-You can use it to:
+## Example usage
 
-- Prioritize your initiatives
-- Technology Radar
-- Einsenhower Matrix
+- **Prioritize your initiatives** — quickly glance at what's important to focus on right now. Place active work near the center and keep an eye on what's on the horizon without losing track of it.
+- **Technology Radar** — communicate to your engineering team what technologies to adopt, trial, hold, or avoid, organized by category (languages, tools, platforms, techniques).
+- **Eisenhower Matrix** — map tasks across four quadrants by urgency and importance. Use 4 categories, combining urgent/not urgent, important/not important to cut through the noise.
+- **Personal knowledge management** — track topics you're actively researching, want to explore, or are letting go. Keep your curiosity organized without forcing every idea into a rigid hierarchy.
+- **Project portfolio** — maintain a bird's-eye view of all your projects. Spot which ones are drifting to the periphery before they stall out completely.
+
 
 ![Sample: Quadrant view](docs/radar-sample-zoomed.png)
 
 ## Features
 
-- **Radar visualization** — items (blips) are placed on a circular radar divided into concentric priority rings and category segments; pan and zoom freely
+- **Radar visualization** — items (blips) are placed on a radar divided into concentric priority rings and category segments; drag, pan and zoom freely
 - **Two blip types** — link a blip to a vault note, or create a standalone text blip
-- **Priority rings** — 1–8 configurable rings; the closer to the center, the higher the priority
+- **Priority levels** — 1–8 configurable levels; the closer to the center, the higher the priority
 - **Category segments** — 3–8 configurable segments to group blips by topic or area
 - **Convert text blip to note** — promote any text blip to a linked vault note in one click
-- **Easy to use** — drag notes from the file explorer directly onto the radar, or right-click a folder to create a new radar inside it
+- **Easy to use** — drag notes from the file explorer directly onto the radar, access notes easily
 - **Customizable** — set colors per priority level, per category, and per blip; adjust blip size and label font size. Add new categories and priority levels without changing blip prioritization. Support multiple visualization modes.
 - **Command palette** — all major actions are available as commands so you can setup global keyboard shortcuts
 - **Mobile app supported**
+- **Support for AI Workflows**: use the [json-radar skill](skills/obsidian-radar/SKILL.md) to create and maintain radars from your Obsidian AI-enabled vault.
+
+## JSON Radar Spec
+
+`.radar` files are stored as UTF-8 JSON in your vault. The format is self-contained — rings, segments, blips, and display settings are all in a single file. This makes radars portable, version-controllable, and easy to generate or modify programmatically (e.g. from an AI workflow or a script).
+
+See [docs/JSON-radar.md](docs/JSON-radar.md) for the full spec.
 
 ## Installing
 
@@ -36,7 +46,7 @@ You can use it to:
 
 ### Manual installation
 
-1. Download `main.js`, `manifest.json`, and `styles.css` from the [latest release](../../releases/latest)
+1. Download `main.js`, `manifest.json`, and `styles.css` from the latest release
 2. Create a folder at `<your vault>/.obsidian/plugins/obsidian-radar/`
 3. Copy the three files into that folder
 4. Open **Settings → Community plugins**, find *Obsidian Radar* in the list, and enable it
@@ -77,6 +87,7 @@ npm run lint    # run ESLint on src/
 Please open an issue before starting work on a large change so we can discuss the approach first.
 
 --- 
+Thanks for using it, if you like it, you can send your support!
 
 [![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://buymeacoffee.com/lfcipriani)
 
