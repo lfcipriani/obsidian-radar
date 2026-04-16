@@ -15,7 +15,7 @@ Visualize your notes and ideas on a radar. Group them by topic, prioritize by pr
 
 Still not sure? Use the [skill](skills/obsidian-radar/SKILL.md) and ask your assistant in your vault to come up with an something. Here's a sample prompt:
 
-> Create a Radar file to prioritize my projects, available in the @Projects/ folder. The categories I want are Engineering, Marketing, Backkoffice and Product. For each note and based on their content, create a blip, put them on the right quadrant and suggest a priority level. Create the file as `focus.radar`.
+> Create a Radar file to prioritize my projects, available in the `@Projects/` folder. The categories I want are Engineering, Marketing, Backoffice and Product. For each note and based on their content, create a blip, put them on the right quadrant and suggest a priority level. Create the file as `Project Focus.radar`.
 
 ![Sample: Quadrant view](docs/radar-sample-zoomed.png)
 
