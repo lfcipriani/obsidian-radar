@@ -40,13 +40,17 @@ See [docs/JSON-radar.md](docs/JSON-radar.md) for the full spec.
 
 ## Installing
 
-### From the Obsidian community plugins browser
+### Skill: obsidian-radar
+
+We'll provide an easier way to install, at the moment, you can copy the skill content available in the [skill](skills/) folder and use your AI platform guide to install it.
+
+### Plugin: From the Obsidian community plugins browser
 
 1. Open **Settings → Community plugins** and disable Safe mode if prompted
 2. Click **Browse** and search for *Obsidian Radar*
 3. Click **Install**, then **Enable**
 
-### Manual installation
+### Plugin: Manual installation
 
 1. Download `main.js`, `manifest.json`, and `styles.css` from the latest release
 2. Create a folder at `<your vault>/.obsidian/plugins/obsidian-radar/`
