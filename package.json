@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-radar",
-	"version": "0.9.0",
+	"version": "0.9.1",
 	"description": "Visualize your notes and ideas on a radar. Group them by topic, prioritize by proximity to the center, and keep focus when juggling multiple areas at once. Do not lose sight of items that might be hiding good opportunities.",
 	"main": "main.js",
 	"type": "module",
