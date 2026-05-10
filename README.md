@@ -40,15 +40,20 @@ See [docs/JSON-radar.md](docs/JSON-radar.md) for the full spec.
 
 ## Installing
 
-### Skill: obsidian-radar
-
-We'll provide an easier way to install, at the moment, you can copy the skill content available in the [skill](skills/) folder and use your AI platform guide to install it.
-
 ### Plugin: From the Obsidian community plugins browser
 
-1. Open **Settings → Community plugins** and disable Safe mode if prompted
-2. Click **Browse** and search for *Obsidian Radar*
-3. Click **Install**, then **Enable**
+Unfortunately, the review process of new Obsidian plugins is taking many months and installing via Obsidian Community Plugins is not an option at the moment. See the submission [PR status](https://github.com/obsidianmd/obsidian-releases/pull/12031).
+
+As an alternative, you can use one of the two methods below. 
+
+### Plugin: Via BRAT (Beta Reviewers Auto-update Tool)
+
+[BRAT](https://github.com/TfTHacker/obsidian42-brat) lets you install plugins that are not yet in the community plugin browser.
+
+1. Install and enable the **BRAT** plugin from the Obsidian community plugins browser
+2. Open **Settings → BRAT** and click **Add Beta plugin**
+3. Enter `lfcipriani/obsidian-radar` and click **Add Plugin**
+4. BRAT will install the latest release; enable the plugin in **Settings → Community plugins**
 
 ### Plugin: Manual installation
 
@@ -56,6 +61,17 @@ We'll provide an easier way to install, at the moment, you can copy the skill co
 2. Create a folder at `<your vault>/.obsidian/plugins/obsidian-radar/`
 3. Copy the three files into that folder
 4. Open **Settings → Community plugins**, find *Obsidian Radar* in the list, and enable it
+
+### AI Skill: obsidian-radar
+
+For an easy install from terminal, using skills.sh:
+
+```
+npx skills add lfcipriani/obsidian-radar
+```
+
+You can copy the skill content available in the [skill](skills/) folder and use your AI platform guide to install it.
+
 
 ## Contributing
 
