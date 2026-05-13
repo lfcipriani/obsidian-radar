@@ -90,21 +90,21 @@ export class RadarInteractions {
 	private setupEventListeners(): void {
 		// Use the full container as the interaction surface so padding around the SVG still pans/zooms.
 		this.eventSurface.addEventListener("mousedown", this.boundMouseDown);
-		document.addEventListener("mousemove", this.boundMouseMove);
-		document.addEventListener("mouseup", this.boundMouseUp);
+		activeDocument.addEventListener("mousemove", this.boundMouseMove);
+		activeDocument.addEventListener("mouseup", this.boundMouseUp);
 
 		this.eventSurface.addEventListener("touchstart", this.boundTouchStart, {
 			passive: false,
 		});
 		// Capture phase so we intercept moves and ends before Obsidian's gesture handlers.
-		document.addEventListener("touchmove", this.boundTouchMove, {
+		activeDocument.addEventListener("touchmove", this.boundTouchMove, {
 			passive: false,
 			capture: true,
 		});
-		document.addEventListener("touchend", this.boundTouchEnd, { capture: true });
+		activeDocument.addEventListener("touchend", this.boundTouchEnd, { capture: true });
 
 		// Capture wheel on the document so parent Obsidian panes can't steal it first.
-		document.addEventListener("wheel", this.boundWheel, {
+		activeDocument.addEventListener("wheel", this.boundWheel, {
 			passive: false,
 			capture: true,
 		});
@@ -541,11 +541,11 @@ export class RadarInteractions {
 		this.eventSurface.removeEventListener("mousedown", this.boundMouseDown);
 		this.eventSurface.removeEventListener("touchstart", this.boundTouchStart);
 		this.eventSurface.removeEventListener("contextmenu", this.boundContextMenu);
-		document.removeEventListener("mousemove", this.boundMouseMove);
-		document.removeEventListener("mouseup", this.boundMouseUp);
-		document.removeEventListener("touchmove", this.boundTouchMove, { capture: true });
-		document.removeEventListener("touchend", this.boundTouchEnd, { capture: true });
-		document.removeEventListener("wheel", this.boundWheel, true);
+		activeDocument.removeEventListener("mousemove", this.boundMouseMove);
+		activeDocument.removeEventListener("mouseup", this.boundMouseUp);
+		activeDocument.removeEventListener("touchmove", this.boundTouchMove, { capture: true });
+		activeDocument.removeEventListener("touchend", this.boundTouchEnd, { capture: true });
+		activeDocument.removeEventListener("wheel", this.boundWheel, true);
 		this.eventSurface.removeEventListener("dragenter", this.boundDragEnter);
 		this.eventSurface.removeEventListener("dragover", this.boundDragOver);
 		this.eventSurface.removeEventListener("dragleave", this.boundDragLeave);

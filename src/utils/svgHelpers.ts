@@ -12,7 +12,7 @@ export function createSvgElement<K extends keyof SVGElementTagNameMap>(
 	tagName: K,
 	attributes?: Record<string, string | number>
 ): SVGElementTagNameMap[K] {
-	const element = document.createElementNS(SVG_NS, tagName);
+	const element = activeDocument.createElementNS(SVG_NS, tagName);
 	if (attributes) {
 		for (const [key, value] of Object.entries(attributes)) {
 			element.setAttribute(key, String(value));

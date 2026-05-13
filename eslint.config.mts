@@ -9,6 +9,7 @@ export default tseslint.config(
 			globals: {
 				...globals.browser,
 				activeWindow: "readonly",
+				activeDocument: "readonly",
 			},
 			parserOptions: {
 				projectService: {
