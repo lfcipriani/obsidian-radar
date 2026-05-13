@@ -28,7 +28,7 @@ export function fillColorSwatches(
 	const isCustom = currentColor !== undefined && !PRESET_COLORS.includes(currentColor);
 
 	for (const colorVar of PRESET_COLORS) {
-		const swatch = container.createEl("div", { cls: "radar-color-swatch" });
+		const swatch = container.createDiv({ cls: "radar-color-swatch" });
 		swatch.style.background = colorVar;
 		if (currentColor === colorVar) {
 			swatch.addClass("radar-color-swatch--selected");
@@ -40,7 +40,7 @@ export function fillColorSwatches(
 	}
 
 	// Custom color swatch — opens native color picker
-	const customSwatch = container.createEl("div", { cls: "radar-color-swatch radar-color-swatch--custom" });
+	const customSwatch = container.createDiv({ cls: "radar-color-swatch radar-color-swatch--custom" });
 	if (isCustom) {
 		customSwatch.addClass("radar-color-swatch--selected");
 	}
