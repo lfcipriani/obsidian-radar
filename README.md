@@ -42,9 +42,11 @@ See [docs/JSON-radar.md](docs/JSON-radar.md) for the full spec.
 
 ### Plugin: From the Obsidian community plugins browser
 
-Unfortunately, the review process of new Obsidian plugins is taking many months and installing via Obsidian Community Plugins is not an option at the moment. See the submission [PR status](https://github.com/obsidianmd/obsidian-releases/pull/12031).
+Plugin page: https://community.obsidian.md/plugins/radar
 
-As an alternative, you can use one of the two methods below. 
+1. Open **Settings → Community plugins** and click **Browse**
+2. Search for *Radar* and click **Install**
+3. Enable the plugin in **Settings → Community plugins**
 
 ### Plugin: Via BRAT (Beta Reviewers Auto-update Tool)
 
