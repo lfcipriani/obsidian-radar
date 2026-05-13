@@ -70,7 +70,7 @@ For an easy install from terminal, using skills.sh:
 npx skills add lfcipriani/obsidian-radar
 ```
 
-You can copy the skill content available in the [skill](skills/) folder and use your AI platform guide to install it.
+Alternatively, you can copy the skill content available in the [skill](skills/) folder and use your AI platform guide to install it.
 
 
 ## Contributing
