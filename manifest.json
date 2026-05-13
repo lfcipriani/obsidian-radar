@@ -1,7 +1,7 @@
 {
 	"id": "radar",
 	"name": "Radar",
-	"version": "0.9.1",
+	"version": "0.9.2",
 	"minAppVersion": "1.9.10",
 	"description": "Visualize your notes and ideas on a radar. Group them by topic, prioritize by proximity to the center, and keep focus when juggling multiple areas at once. Do not lose sight of items that might be hiding good opportunities.",
 	"author": "Luis Cipriani",
