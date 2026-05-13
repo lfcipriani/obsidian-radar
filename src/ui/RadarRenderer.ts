@@ -456,10 +456,7 @@ export class RadarRenderer {
 		this.currentZoom = zoom;
 		this.currentPanX = panX;
 		this.currentPanY = panY;
-		this.svg.setCssProps({
-			transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
-			"transform-origin": "center center",
-		});
+		this.svg.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
 	}
 
 	/**
