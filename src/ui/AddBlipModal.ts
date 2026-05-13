@@ -22,7 +22,7 @@ export class AddBlipModal extends FuzzySuggestModal<TFile> {
 		return file.basename;
 	}
 
-	onChooseItem(file: TFile, evt: MouseEvent | KeyboardEvent): void {
+	onChooseItem(file: TFile, _evt: MouseEvent | KeyboardEvent): void {
 		this.onSubmit(file.path, file.basename);
 	}
 }
