@@ -336,7 +336,7 @@ export class CustomizeRadarModal extends Modal {
 			row.addEventListener("dragstart", (e) => {
 				dragSrcIndex = i;
 				e.dataTransfer?.setData("text/plain", String(i));
-				activeWindow.setTimeout(() => row.addClass("radar-drag-source"), 0);
+				window.setTimeout(() => row.addClass("radar-drag-source"), 0);
 			});
 
 			row.addEventListener("dragend", () => {

@@ -8,7 +8,6 @@ export default tseslint.config(
 		languageOptions: {
 			globals: {
 				...globals.browser,
-				activeWindow: "readonly",
 				activeDocument: "readonly",
 			},
 			parserOptions: {
