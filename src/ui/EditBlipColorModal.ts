@@ -39,7 +39,7 @@ export class EditBlipColorModal extends Modal {
 					});
 			});
 
-		const swatchContainer = colorSetting.controlEl.createEl("div", { cls: "radar-color-swatches" });
+		const swatchContainer = colorSetting.controlEl.createDiv({ cls: "radar-color-swatches" });
 		fillColorSwatches(
 			swatchContainer,
 			this.color,

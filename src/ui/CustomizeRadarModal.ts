@@ -127,7 +127,7 @@ export class CustomizeRadarModal extends Modal {
 						})
 				);
 
-			const swatchContainer = s.controlEl.createEl("div", { cls: "radar-color-swatches" });
+			const swatchContainer = s.controlEl.createDiv({ cls: "radar-color-swatches" });
 			fillColorSwatches(
 				swatchContainer,
 				priority.color,
@@ -223,7 +223,7 @@ export class CustomizeRadarModal extends Modal {
 				);
 
 			// Insert color swatches before the reset button
-			const swatchContainer = s.controlEl.createEl("div", { cls: "radar-color-swatches" });
+			const swatchContainer = s.controlEl.createDiv({ cls: "radar-color-swatches" });
 			fillColorSwatches(
 				swatchContainer,
 				category.color,
@@ -312,7 +312,7 @@ export class CustomizeRadarModal extends Modal {
 					});
 			});
 
-		const swatchContainer = colorSetting.controlEl.createEl("div", { cls: "radar-color-swatches" });
+		const swatchContainer = colorSetting.controlEl.createDiv({ cls: "radar-color-swatches" });
 		fillColorSwatches(
 			swatchContainer,
 			this.blipColor,
@@ -336,7 +336,7 @@ export class CustomizeRadarModal extends Modal {
 			row.addEventListener("dragstart", (e) => {
 				dragSrcIndex = i;
 				e.dataTransfer?.setData("text/plain", String(i));
-				setTimeout(() => row.addClass("radar-drag-source"), 0);
+				activeWindow.setTimeout(() => row.addClass("radar-drag-source"), 0);
 			});
 
 			row.addEventListener("dragend", () => {
