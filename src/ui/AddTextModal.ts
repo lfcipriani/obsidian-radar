@@ -5,19 +5,33 @@
 
 import { App, Modal, Setting } from "obsidian";
 
-export class AddTextModal extends Modal {
-	private title = "";
-	private onSubmit: (title: string) => void;
+export interface AddTextModalOptions {
+	/** Pre-filled title text (used when renaming an existing blip) */
+	initialTitle?: string;
+	/** Modal heading text */
+	heading?: string;
+	/** Text for the confirm button */
+	submitButtonText?: string;
+}
 
-	constructor(app: App, onSubmit: (title: string) => void) {
+export class AddTextModal extends Modal {
+	private title: string;
+	private onSubmit: (title: string) => void;
+	private heading: string;
+	private submitButtonText: string;
+
+	constructor(app: App, onSubmit: (title: string) => void, options: AddTextModalOptions = {}) {
 		super(app);
 		this.onSubmit = onSubmit;
+		this.title = options.initialTitle ?? "";
+		this.heading = options.heading ?? "Add text to radar";
+		this.submitButtonText = options.submitButtonText ?? "Add";
 	}
 
 	onOpen(): void {
 		const { contentEl } = this;
 
-		contentEl.createEl("h2", { text: "Add text to radar" });
+		contentEl.createEl("h2", { text: this.heading });
 
 		new Setting(contentEl)
 			.setName("Title")
@@ -25,6 +39,7 @@ export class AddTextModal extends Modal {
 			.addText((text) => {
 				text
 					.setPlaceholder("Enter text...")
+					.setValue(this.title)
 					.onChange((value) => {
 						this.title = value;
 					});
@@ -40,7 +55,7 @@ export class AddTextModal extends Modal {
 		new Setting(contentEl)
 			.addButton((btn) =>
 				btn
-					.setButtonText("Add")
+					.setButtonText(this.submitButtonText)
 					.setCta()
 					.onClick(() => {
 						if (this.title.trim()) {

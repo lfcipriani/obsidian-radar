@@ -221,13 +221,19 @@ export class RadarView extends TextFileView {
 			);
 		}
 
-		// If it's a text blip, offer to create a note from it
+		// If it's a text blip, offer to create a note from it or rename it
 		if (blip.type === "text") {
 			menu.addItem((item) =>
 				item
 					.setTitle("Create a note from this blip")
 					.setIcon("file-plus")
 					.onClick(() => void this.createNoteFromBlip(blip))
+			);
+			menu.addItem((item) =>
+				item
+					.setTitle("Rename")
+					.setIcon("pencil")
+					.onClick(() => this.openRenameTextModal(blipId, blip.title))
 			);
 		}
 
@@ -404,6 +410,29 @@ export class RadarView extends TextFileView {
 				theta: theta ?? Math.random() * 360,
 			});
 		});
+		modal.open();
+	}
+
+	/**
+	 * Open modal to rename an existing text blip
+	 */
+	private openRenameTextModal(blipId: string, currentTitle: string): void {
+		if (!this.radarData) return;
+
+		const modal = new AddTextModal(
+			this.app,
+			(title) => {
+				if (!this.radarData) return;
+				this.plugin.radarStore.updateBlip(this.radarData, blipId, { title });
+				this.renderer?.updateData(this.radarData);
+				this.requestSave();
+			},
+			{
+				initialTitle: currentTitle,
+				heading: "Rename text blip",
+				submitButtonText: "Rename",
+			}
+		);
 		modal.open();
 	}
 
