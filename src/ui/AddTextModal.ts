@@ -50,6 +50,14 @@ export class AddTextModal extends Modal {
 						this.onSubmit(this.title.trim());
 					}
 				});
+
+				// Pre-filled (rename) — select all so typing replaces the whole name.
+				if (this.title) {
+					text.inputEl.focus();
+					text.inputEl.select();
+				} else {
+					text.inputEl.focus();
+				}
 			});
 
 		new Setting(contentEl)
