@@ -9,6 +9,7 @@ import { cartesianToPolar, clamp } from "../utils/polarCoordinates";
 export interface RadarInteractionsOptions {
 	onBlipMove: (blipId: string, r: number, theta: number) => void;
 	onBlipClick: (blipId: string, event: MouseEvent | TouchEvent) => void;
+	onBlipDoubleClick: (blipId: string) => void;
 	onRadarContextMenu: (event: MouseEvent) => void;
 	onFileDrop: (event: DragEvent, r: number, theta: number) => void;
 	onZoomChange: (zoom: number) => void;
@@ -54,6 +55,7 @@ export class RadarInteractions {
 	private boundMouseDown: (e: MouseEvent) => void;
 	private boundTouchStart: (e: TouchEvent) => void;
 	private boundContextMenu: (e: MouseEvent) => void;
+	private boundDblClick: (e: MouseEvent) => void;
 	private boundDragEnter: (e: DragEvent) => void;
 	private boundDragOver: (e: DragEvent) => void;
 	private boundDragLeave: (e: DragEvent) => void;
@@ -79,6 +81,7 @@ export class RadarInteractions {
 		this.boundMouseDown = this.onSvgMouseDown.bind(this);
 		this.boundTouchStart = this.onSvgTouchStart.bind(this);
 		this.boundContextMenu = this.onContextMenu.bind(this);
+		this.boundDblClick = this.onDblClick.bind(this);
 		this.boundDragEnter = this.onDragEnter.bind(this);
 		this.boundDragOver = this.onDragOver.bind(this);
 		this.boundDragLeave = this.onDragLeave.bind(this);
@@ -109,6 +112,7 @@ export class RadarInteractions {
 			capture: true,
 		});
 		this.eventSurface.addEventListener("contextmenu", this.boundContextMenu);
+		this.eventSurface.addEventListener("dblclick", this.boundDblClick);
 		this.eventSurface.addEventListener("dragenter", this.boundDragEnter);
 		this.eventSurface.addEventListener("dragover", this.boundDragOver);
 		this.eventSurface.addEventListener("dragleave", this.boundDragLeave);
@@ -424,6 +428,20 @@ export class RadarInteractions {
 	}
 
 	/**
+	 * Double-click on a blip triggers its primary action (open note / rename text).
+	 */
+	private onDblClick(e: MouseEvent): void {
+		const target = e.target as SVGElement;
+		const blipGroup = target.closest(".radar-blip");
+		const blipId = blipGroup?.getAttribute("data-blip-id");
+
+		if (blipId) {
+			e.preventDefault();
+			this.options.onBlipDoubleClick(blipId);
+		}
+	}
+
+	/**
 	 * Wheel event - handles both zoom and pan depending on input device
 	 * - Trackpad pinch (ctrlKey) or mouse wheel: zoom
 	 * - Trackpad two-finger scroll: pan
@@ -541,6 +559,7 @@ export class RadarInteractions {
 		this.eventSurface.removeEventListener("mousedown", this.boundMouseDown);
 		this.eventSurface.removeEventListener("touchstart", this.boundTouchStart);
 		this.eventSurface.removeEventListener("contextmenu", this.boundContextMenu);
+		this.eventSurface.removeEventListener("dblclick", this.boundDblClick);
 		activeDocument.removeEventListener("mousemove", this.boundMouseMove);
 		activeDocument.removeEventListener("mouseup", this.boundMouseUp);
 		activeDocument.removeEventListener("touchmove", this.boundTouchMove, { capture: true });

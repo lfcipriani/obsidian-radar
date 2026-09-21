@@ -168,6 +168,7 @@ export class RadarView extends TextFileView {
 			{
 				onBlipMove: (blipId, r, theta) => this.onBlipMove(blipId, r, theta),
 				onBlipClick: (blipId, event) => this.onBlipClick(blipId, event),
+				onBlipDoubleClick: (blipId) => this.onBlipDoubleClick(blipId),
 				onRadarContextMenu: (event) => this.onRadarContextMenu(event),
 				onFileDrop: (event, r, theta) => this.onFileDrop(event, r, theta),
 				onZoomChange: (zoom) => this.onZoomChange(zoom),
@@ -267,6 +268,20 @@ export class RadarView extends TextFileView {
 			if (touch) {
 				menu.showAtPosition({ x: touch.clientX, y: touch.clientY });
 			}
+		}
+	}
+
+	/**
+	 * Handle blip double-click: open note blips in a new tab, rename text blips
+	 */
+	private onBlipDoubleClick(blipId: string): void {
+		const blip = this.radarData?.blips.find((b) => b.id === blipId);
+		if (!blip) return;
+
+		if (blip.type === "note" && blip.notePath) {
+			void this.app.workspace.openLinkText(blip.notePath, "", "tab");
+		} else if (blip.type === "text") {
+			this.openRenameTextModal(blipId, blip.title);
 		}
 	}
 
