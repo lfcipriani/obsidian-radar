@@ -19,6 +19,10 @@ import {
 export class RadarRenderer {
 	private static readonly categoryLabelRadiusOffset = 28;
 	private static readonly maxBlipTitleLength = 15;
+	/** Padding (in SVG units, ~px) kept around the rendered content when exporting */
+	private static readonly exportPadding = 15;
+	/** Supersampling factor applied to exported PNGs for a crisper image */
+	private static readonly exportScale = 3;
 
 	private svg: SVGSVGElement;
 	private defsEl: SVGDefsElement;
@@ -533,6 +537,103 @@ export class RadarRenderer {
 			this.priorityLabelsGroup.removeClass("radar-priority-labels-hidden");
 		} else {
 			this.priorityLabelsGroup.addClass("radar-priority-labels-hidden");
+		}
+	}
+
+	/**
+	 * Render the radar to a standalone PNG image at zoom level 1, ignoring the
+	 * current pan/zoom transform.
+	 */
+	async exportAsPngBlob(): Promise<Blob> {
+		const padding = RadarRenderer.exportPadding;
+		const scale = RadarRenderer.exportScale;
+
+		// Tight bounding box of the actually-rendered content (rings, segments,
+		// labels, blips) in the SVG's own coordinate space — ignores the empty
+		// margin reserved by the full viewBox for off-screen panning.
+		const bbox = this.svg.getBBox();
+		const minX = bbox.x - padding;
+		const minY = bbox.y - padding;
+		const contentWidth = bbox.width + padding * 2;
+		const contentHeight = bbox.height + padding * 2;
+
+		const outputWidth = Math.round(contentWidth * scale);
+		const outputHeight = Math.round(contentHeight * scale);
+
+		const clone = this.svg.cloneNode(true) as SVGSVGElement;
+
+		this.inlineComputedStyles(this.svg, clone);
+
+		clone.setAttribute("viewBox", `${minX} ${minY} ${contentWidth} ${contentHeight}`);
+		clone.setAttribute("width", String(outputWidth));
+		clone.setAttribute("height", String(outputHeight));
+
+		const background = getComputedStyle(this.svg).getPropertyValue("--background-primary").trim();
+		if (background) {
+			const backgroundRect = createSvgElement("rect", {
+				x: minX,
+				y: minY,
+				width: contentWidth,
+				height: contentHeight,
+				fill: background,
+			});
+			clone.insertBefore(backgroundRect, clone.firstChild);
+		}
+
+		const svgString = new XMLSerializer().serializeToString(clone);
+		const svgBlob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+		const url = URL.createObjectURL(svgBlob);
+
+		try {
+			const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+				const img = new Image();
+				img.onload = () => resolve(img);
+				img.onerror = () => reject(new Error("Failed to load radar SVG for export"));
+				img.src = url;
+			});
+
+			const canvas = document.createElement("canvas");
+			canvas.width = outputWidth;
+			canvas.height = outputHeight;
+			const ctx = canvas.getContext("2d");
+			if (!ctx) throw new Error("Canvas 2D context is not available");
+			ctx.drawImage(image, 0, 0, outputWidth, outputHeight);
+
+			return await new Promise<Blob>((resolve, reject) => {
+				canvas.toBlob((blob) => {
+					if (blob) resolve(blob);
+					else reject(new Error("Failed to generate PNG blob"));
+				}, "image/png");
+			});
+		} finally {
+			URL.revokeObjectURL(url);
+		}
+	}
+
+	/**
+	 * Recursively bake computed styles (resolved colors, fonts, etc.) into inline
+	 * style attributes so the cloned SVG renders correctly once detached from the document.
+	 */
+	private inlineComputedStyles(source: Element, target: Element): void {
+		const computed = getComputedStyle(source);
+		const properties = [
+			"fill", "stroke", "stroke-width", "stroke-dasharray", "stroke-linecap", "stroke-linejoin",
+			"opacity", "fill-opacity", "stroke-opacity", "font-size", "font-family", "font-weight",
+			"text-anchor", "dominant-baseline", "filter", "display", "visibility",
+		];
+		let styleText = "";
+		for (const property of properties) {
+			const value = computed.getPropertyValue(property);
+			if (value) styleText += `${property}:${value};`;
+		}
+		target.setAttribute("style", styleText);
+
+		for (let i = 0; i < source.children.length; i++) {
+			const sourceChild = source.children[i];
+			const targetChild = target.children[i];
+			if (sourceChild && targetChild) {
+				this.inlineComputedStyles(sourceChild, targetChild);
+			}
 		}
 	}
 

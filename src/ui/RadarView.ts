@@ -3,7 +3,7 @@
  * TextFileView subclass for displaying and interacting with a radar
  */
 
-import { TextFileView, WorkspaceLeaf, Menu, TFile, normalizePath } from "obsidian";
+import { TextFileView, WorkspaceLeaf, Menu, TFile, normalizePath, Notice } from "obsidian";
 import type RadarPlugin from "../main";
 import type { RadarData, Blip, ViewState, TitleMode } from "../types";
 import { VIEW_TYPE_RADAR, SVG_CONFIG, DEFAULT_VIEW_STATE } from "../constants";
@@ -15,6 +15,7 @@ import { AddTextModal } from "./AddTextModal";
 import { CustomizeRadarModal } from "./CustomizeRadarModal";
 import { HelpModal } from "./HelpModal";
 import { EditBlipColorModal } from "./EditBlipColorModal";
+import { ExportImageModal } from "./ExportImageModal";
 import { rotateBlipsWithCategories, repositionBlipsWithPriorities } from "../utils/polarCoordinates";
 
 export class RadarView extends TextFileView {
@@ -126,6 +127,20 @@ export class RadarView extends TextFileView {
 		this.clear();
 		this.toolbar = null;
 		await super.onClose();
+	}
+
+	/**
+	 * Add "Export as image" to the view's more-options (tab three-dot) menu
+	 */
+	onPaneMenu(menu: Menu, source: string): void {
+		super.onPaneMenu(menu, source);
+
+		menu.addItem((item) =>
+			item
+				.setTitle("Export as image")
+				.setIcon("image")
+				.onClick(() => this.exportAsImage())
+		);
 	}
 
 	/**
@@ -449,6 +464,54 @@ export class RadarView extends TextFileView {
 			}
 		);
 		modal.open();
+	}
+
+	/**
+	 * Export the radar as a PNG image, prompting for a file name and saving
+	 * it in the vault, in the same folder as this radar file
+	 */
+	private exportAsImage(): void {
+		if (!this.radarData || !this.renderer || !this.file) return;
+
+		const defaultFileName = `${this.file.basename}.png`;
+
+		new ExportImageModal(this.app, defaultFileName, (fileName) => {
+			void this.saveExportedImage(fileName);
+		}).open();
+	}
+
+	/**
+	 * Render the radar to PNG and write it into the vault next to this radar file
+	 */
+	private async saveExportedImage(fileName: string): Promise<void> {
+		if (!this.renderer || !this.file) return;
+
+		const name = fileName.toLowerCase().endsWith(".png") ? fileName : `${fileName}.png`;
+		const folder = this.file.parent?.path ?? "";
+		const path = normalizePath(folder ? `${folder}/${name}` : name);
+
+		let blob: Blob;
+		try {
+			blob = await this.renderer.exportAsPngBlob();
+		} catch (error) {
+			console.error("Failed to render radar as image:", error);
+			new Notice("Failed to export radar as image.");
+			return;
+		}
+
+		try {
+			const arrayBuffer = await blob.arrayBuffer();
+			const existing = this.app.vault.getAbstractFileByPath(path);
+			if (existing instanceof TFile) {
+				await this.app.vault.modifyBinary(existing, arrayBuffer);
+			} else {
+				await this.app.vault.createBinary(path, arrayBuffer);
+			}
+			new Notice(`Exported radar image to ${path}`);
+		} catch (error) {
+			console.error("Failed to save radar image:", error);
+			new Notice("Failed to save radar image.");
+		}
 	}
 
 	/**
