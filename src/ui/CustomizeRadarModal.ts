@@ -275,7 +275,6 @@ export class CustomizeRadarModal extends Modal {
 				slider
 					.setLimits(MIN_BLIP_RADIUS, MAX_BLIP_RADIUS, 1)
 					.setValue(this.blipRadius)
-					.setDynamicTooltip()
 					.onChange((value) => {
 						this.blipRadius = value;
 						this.options.onBlipRadiusChanged(value);
@@ -289,7 +288,6 @@ export class CustomizeRadarModal extends Modal {
 				slider
 					.setLimits(MIN_BLIP_FONT_SIZE, MAX_BLIP_FONT_SIZE, 1)
 					.setValue(this.blipFontSize)
-					.setDynamicTooltip()
 					.onChange((value) => {
 						this.blipFontSize = value;
 						this.options.onBlipFontSizeChanged(value);

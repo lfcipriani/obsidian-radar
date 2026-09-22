@@ -592,7 +592,7 @@ export class RadarRenderer {
 				img.src = url;
 			});
 
-			const canvas = document.createElement("canvas");
+			const canvas = createEl("canvas");
 			canvas.width = outputWidth;
 			canvas.height = outputHeight;
 			const ctx = canvas.getContext("2d");
