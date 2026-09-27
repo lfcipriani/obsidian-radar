@@ -14,8 +14,9 @@ export function createSvgElement<K extends keyof SVGElementTagNameMap>(
 ): SVGElementTagNameMap[K] {
 	const element = activeDocument.createElementNS(SVG_NS, tagName);
 	if (attributes) {
-		for (const [key, value] of Object.entries(attributes)) {
-			element.setAttribute(key, String(value));
+		for (const key of Object.keys(attributes)) {
+			const value = attributes[key];
+			if (value !== undefined) element.setAttribute(key, String(value));
 		}
 	}
 	return element;
@@ -115,7 +116,8 @@ export function setAttributes(
 	element: SVGElement,
 	attributes: Record<string, string | number>
 ): void {
-	for (const [key, value] of Object.entries(attributes)) {
-		element.setAttribute(key, String(value));
+	for (const key of Object.keys(attributes)) {
+		const value = attributes[key];
+		if (value !== undefined) element.setAttribute(key, String(value));
 	}
 }
