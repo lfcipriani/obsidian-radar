@@ -22,7 +22,7 @@ export class HelpModal extends Modal {
 		noteList.createEl("li", { text: "Add — drag a note from the sidebar, toolbar button or right-click on the radar" });
 		noteList.createEl("li", { text: `Open note — double-click or ${mod}+click on the blip` });
 		noteList.createEl("li", { text: "Blip settings — click or right-click on the blip" });
-		noteList.createEl("li", { text: "Remove — open blip settings" });
+		noteList.createEl("li", { text: "Remove — open blip settings and click the trash icon. Removing a note blip doesn't delete the note" });
 
 		// Text blips
 		contentEl.createEl("h3", { text: "Text blips" });
@@ -31,7 +31,7 @@ export class HelpModal extends Modal {
 		textList.createEl("li", { text: "Rename — double-click on the blip" });
 		textList.createEl("li", { text: `Create note from blip — ${mod}+click on the blip` });
 		textList.createEl("li", { text: "Blip settings — click or right-click on the blip" });
-		textList.createEl("li", { text: "Remove — open blip settings" });
+		textList.createEl("li", { text: "Remove — open blip settings and click the trash icon" });
 	}
 
 	onClose(): void {
