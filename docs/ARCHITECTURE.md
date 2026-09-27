@@ -31,7 +31,6 @@ src/
 │   ├── AddBlipModal.ts        # Modal for adding note blips
 │   ├── AddTextModal.ts        # Modal for adding text blips
 │   ├── CustomizeRadarModal.ts # Modal for priorities, categories, colors, blip size
-│   ├── EditBlipColorModal.ts  # Modal for per-blip color override
 │   └── HelpModal.ts           # Quick-reference help modal
 │
 └── utils/
@@ -132,7 +131,7 @@ RadarView extends TextFileView
 ├── renderRadar()        → Initializes RadarRenderer, RadarInteractions, RadarToolbar
 └── Event handlers
     ├── onBlipMove()           → Update position, save
-    ├── onBlipClick()          → Context menu / Cmd+click opens note
+    ├── onBlipModifierClick()  → Cmd/Ctrl+click: open note / create note from text
     ├── onBlipSingleClick()    → BlipActionBar (note: open, color, remove; text: create note, rename, color, remove)
     ├── onRadarContextMenu()   → Background menu (add, customize, zoom)
     ├── onFileDrop()           → Drop notes from sidebar to add as blips
@@ -205,7 +204,8 @@ RadarInteractions
 ├── Drag (blips)
 │   ├── mousedown / touchstart → Start drag (threshold 5px)
 │   ├── mousemove / touchmove  → Update blip position
-│   └── mouseup / touchend    → End drag, emit onBlipMove(id, r, theta)
+│   └── mouseup / touchend    → End drag, emit onBlipMove(id, r, theta);
+│                                without movement, click/tap emits onBlipSingleClick
 ├── Pan (background)
 │   ├── Left-click + drag empty space
 │   └── Two-finger trackpad scroll → emit onPanChange(panX, panY)
@@ -215,7 +215,7 @@ RadarInteractions
 │   ├── Touch pinch (two-finger) → proportional
 │   └── emit onZoomChange(zoom)
 ├── Context menu
-│   └── Right-click → emit onBlipClick or onRadarContextMenu
+│   └── Right-click → emit onBlipSingleClick (blip) or onRadarContextMenu
 ├── File drop
 │   └── Obsidian DragManager or text/plain fallback → emit onFileDrop(notePath, r, theta)
 └── Helpers
@@ -271,7 +271,6 @@ RadarStore
 | `AddBlipModal` | `FuzzySuggestModal` — pick a markdown file to add as a note blip |
 | `AddTextModal` | Text input — create a free-text blip (Enter to submit) |
 | `CustomizeRadarModal` | Drag-and-drop reorder priorities/categories; add/remove; color swatches (7 presets + custom picker); blip size slider; default blip color picker |
-| `EditBlipColorModal` | Per-blip color picker with Save / Clear / Cancel |
 | `HelpModal` | Quick-reference cheat sheet (platform-aware: shows Cmd on macOS, Ctrl elsewhere) |
 
 `CustomizeRadarModal` redistributes `maxRadius` values and `startAngle` values automatically when priorities/categories are reordered, added, or removed. Changes propagate via callbacks: `onPrioritiesChanged`, `onCategoriesChanged`, `onBlipRadiusChanged`, `onBlipColorChanged`.

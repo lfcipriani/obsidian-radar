@@ -48,7 +48,6 @@ src/
 │   ├── AddBlipModal.ts        # Modal for adding note blips
 │   ├── AddTextModal.ts        # Modal for adding text blips
 │   ├── CustomizeRadarModal.ts # Modal for priorities, categories, colors, blip size
-│   ├── EditBlipColorModal.ts  # Modal for per-blip color override
 │   └── HelpModal.ts           # Quick-reference help modal
 └── utils/
     ├── idGenerator.ts         # UUID generation

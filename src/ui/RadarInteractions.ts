@@ -8,7 +8,7 @@ import { cartesianToPolar, clamp } from "../utils/polarCoordinates";
 
 export interface RadarInteractionsOptions {
 	onBlipMove: (blipId: string, r: number, theta: number) => void;
-	onBlipClick: (blipId: string, event: MouseEvent | TouchEvent) => void;
+	onBlipModifierClick: (blipId: string) => void;
 	onBlipSingleClick: (blipId: string) => void;
 	onBlipDoubleClick: (blipId: string) => void;
 	onRadarContextMenu: (event: MouseEvent) => void;
@@ -366,8 +366,8 @@ export class RadarInteractions {
 						this.options.onBlipMove(blipId, polar.r, polar.theta);
 					}
 				} else {
-					// It was a tap - trigger click callback
-					this.options.onBlipClick(blipId, e);
+					// It was a tap - show the blip's quick actions
+					this.options.onBlipSingleClick(blipId);
 				}
 			}
 
@@ -394,8 +394,8 @@ export class RadarInteractions {
 				const polar = cartesianToPolar(clampedX, clampedY, SVG_CONFIG.maxRadius);
 				this.options.onBlipMove(blipId, polar.r, polar.theta);
 			} else if (event.metaKey || event.ctrlKey) {
-				// Modifier+click - trigger click callback for special handling
-				this.options.onBlipClick(blipId, event);
+				// Modifier+click - blip's primary shortcut action
+				this.options.onBlipModifierClick(blipId);
 			} else {
 				// Plain click - show the blip's quick actions
 				this.options.onBlipSingleClick(blipId);
@@ -415,7 +415,8 @@ export class RadarInteractions {
 	}
 
 	/**
-	 * Open the blip context menu on right-click and leave other targets alone.
+	 * Right-click (or long-press) on a blip shows its quick actions;
+	 * elsewhere it opens the radar context menu.
 	 */
 	private onContextMenu(e: MouseEvent): void {
 		const target = e.target as SVGElement;
@@ -425,7 +426,7 @@ export class RadarInteractions {
 		e.preventDefault();
 
 		if (blipId) {
-			this.options.onBlipClick(blipId, e);
+			this.options.onBlipSingleClick(blipId);
 		} else {
 			this.options.onRadarContextMenu(e);
 		}

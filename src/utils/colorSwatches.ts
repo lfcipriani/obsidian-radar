@@ -1,5 +1,5 @@
 /**
- * Shared color swatch picker used in CustomizeRadarModal and EditBlipColorModal
+ * Shared color swatch picker used in CustomizeRadarModal and BlipActionBar
  */
 
 export const PRESET_COLORS = [

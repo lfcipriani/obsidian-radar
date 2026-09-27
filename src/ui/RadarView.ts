@@ -15,7 +15,6 @@ import { AddBlipModal } from "./AddBlipModal";
 import { AddTextModal } from "./AddTextModal";
 import { CustomizeRadarModal } from "./CustomizeRadarModal";
 import { HelpModal } from "./HelpModal";
-import { EditBlipColorModal } from "./EditBlipColorModal";
 import { ExportImageModal } from "./ExportImageModal";
 import { rotateBlipsWithCategories, repositionBlipsWithPriorities } from "../utils/polarCoordinates";
 
@@ -128,12 +127,14 @@ export class RadarView extends TextFileView {
 		// Quick-action bar shown above a blip on single click
 		this.blipActionBar = new BlipActionBar(this.mainContainer);
 
-		// Dismiss the action bar on any press outside it, or on Escape
-		this.registerDomEvent(activeDocument, "mousedown", (e) => {
+		// Dismiss the action bar on any press outside it, or on Escape.
+		// pointerdown covers mouse and touch; the radar prevents default on
+		// touchstart, which suppresses the compatibility mousedown on mobile.
+		this.registerDomEvent(activeDocument, "pointerdown", (e) => {
 			if (!this.blipActionBar?.contains(e.target)) {
 				this.blipActionBar?.hide();
 			}
-		});
+		}, { capture: true });
 		this.registerDomEvent(activeDocument, "keydown", (e) => {
 			if (e.key === "Escape") {
 				this.blipActionBar?.hide();
@@ -203,7 +204,7 @@ export class RadarView extends TextFileView {
 			this.renderer.getBlipsGroup(),
 			{
 				onBlipMove: (blipId, r, theta) => this.onBlipMove(blipId, r, theta),
-				onBlipClick: (blipId, event) => this.onBlipClick(blipId, event),
+				onBlipModifierClick: (blipId) => this.onBlipModifierClick(blipId),
 				onBlipSingleClick: (blipId) => this.onBlipSingleClick(blipId),
 				onBlipDoubleClick: (blipId) => this.onBlipDoubleClick(blipId),
 				onRadarContextMenu: (event) => this.onRadarContextMenu(event),
@@ -227,81 +228,17 @@ export class RadarView extends TextFileView {
 	}
 
 	/**
-	 * Handle blip click (not drag)
+	 * Handle Cmd+click (macOS) or Ctrl+click (Win/Linux) on a blip:
+	 * open note blips, create a note from text blips
 	 */
-	private onBlipClick(blipId: string, event: MouseEvent | TouchEvent): void {
+	private onBlipModifierClick(blipId: string): void {
 		const blip = this.radarData?.blips.find((b) => b.id === blipId);
 		if (!blip) return;
 
-		// Command+click (macOS) or Ctrl+click (Win/Linux)
-		if (event instanceof MouseEvent && (event.metaKey || event.ctrlKey)) {
-			if (blip.type === "note" && blip.notePath) {
-				void this.app.workspace.openLinkText(blip.notePath, "", "tab");
-			} else if (blip.type === "text") {
-				void this.createNoteFromBlip(blip);
-			}
-			return;
-		}
-
-		const menu = new Menu();
-
-		// If it's a note blip, offer to open the note
 		if (blip.type === "note" && blip.notePath) {
-			menu.addItem((item) =>
-				item
-					.setTitle("Open note")
-					.setIcon("file")
-					.onClick(() => {
-						if (blip.notePath) {
-							void this.app.workspace.openLinkText(blip.notePath, "", "tab");
-						}
-					})
-			);
-		}
-
-		// If it's a text blip, offer to create a note from it or rename it
-		if (blip.type === "text") {
-			menu.addItem((item) =>
-				item
-					.setTitle("Create a note from this blip")
-					.setIcon("file-plus")
-					.onClick(() => void this.createNoteFromBlip(blip))
-			);
-			menu.addItem((item) =>
-				item
-					.setTitle("Rename")
-					.setIcon("pencil")
-					.onClick(() => this.openRenameTextModal(blipId, blip.title))
-			);
-		}
-
-		menu.addItem((item) =>
-			item
-				.setTitle("Edit color")
-				.setIcon("palette")
-				.onClick(() => {
-					new EditBlipColorModal(this.app, blip.color, (color) =>
-						this.setBlipColor(blipId, color)
-					).open();
-				})
-		);
-
-		menu.addItem((item) =>
-			item
-				.setTitle("Remove from radar")
-				.setIcon("trash")
-				.onClick(() => this.removeBlip(blipId))
-		);
-
-		// Handle both mouse and touch events for menu positioning
-		if (event instanceof MouseEvent) {
-			menu.showAtMouseEvent(event);
-		} else {
-			// For touch events, use the touch position
-			const touch = event.changedTouches[0];
-			if (touch) {
-				menu.showAtPosition({ x: touch.clientX, y: touch.clientY });
-			}
+			void this.app.workspace.openLinkText(blip.notePath, "", "tab");
+		} else if (blip.type === "text") {
+			void this.createNoteFromBlip(blip);
 		}
 	}
 
