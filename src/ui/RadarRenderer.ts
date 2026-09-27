@@ -16,7 +16,7 @@ import {
 	setAttributes,
 } from "../utils/svgHelpers";
 import type { BlipLink } from "../utils/backlinks";
-import { RadarBacklinks } from "./RadarBacklinks";
+import { RadarBacklinks, type BacklinkEndpoint } from "./RadarBacklinks";
 
 export class RadarRenderer {
 	private static readonly categoryLabelRadiusOffset = 28;
@@ -92,11 +92,14 @@ export class RadarRenderer {
 	 * Redraw the dashed lines between blips whose notes link to each other
 	 */
 	renderBacklinks(): void {
-		const positions = new Map<string, { x: number; y: number }>();
+		const endpoints = new Map<string, BacklinkEndpoint>();
 		for (const blip of this.radarData.blips) {
-			positions.set(blip.id, polarToCartesian(blip.r, blip.theta, SVG_CONFIG.maxRadius));
+			const pos = polarToCartesian(blip.r, blip.theta, SVG_CONFIG.maxRadius);
+			// Same fallback as the blip dot: per-blip → radar default → accent
+			const color = blip.color ?? this.radarData.blipColor ?? "var(--color-accent)";
+			endpoints.set(blip.id, { ...pos, color });
 		}
-		this.backlinks.render(this.getLinks(this.radarData.blips), positions, this.radarData.blipRadius);
+		this.backlinks.render(this.getLinks(this.radarData.blips), endpoints, this.radarData.blipRadius);
 	}
 
 	/**
@@ -656,6 +659,7 @@ export class RadarRenderer {
 			"fill", "stroke", "stroke-width", "stroke-dasharray", "stroke-linecap", "stroke-linejoin",
 			"opacity", "fill-opacity", "stroke-opacity", "font-size", "font-family", "font-weight",
 			"text-anchor", "dominant-baseline", "filter", "display", "visibility",
+			"stop-color", "stop-opacity",
 		];
 		let styleText = "";
 		for (const property of properties) {

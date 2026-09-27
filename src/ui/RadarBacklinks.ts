@@ -5,11 +5,17 @@
 
 import { SVG_CONFIG } from "../constants";
 import type { BlipLink } from "../utils/backlinks";
-import { createGroup, createSvgElement } from "../utils/svgHelpers";
+import { generateId } from "../utils/idGenerator";
+import { createGroup, createSvgElement, setAttributes } from "../utils/svgHelpers";
 
 interface Point {
 	x: number;
 	y: number;
+}
+
+/** Where a blip sits and which color its backlink lines should use */
+export interface BacklinkEndpoint extends Point {
+	color: string;
 }
 
 export class RadarBacklinks {
@@ -17,15 +23,20 @@ export class RadarBacklinks {
 	private static readonly curvature = 0.10;
 
 	private group: SVGGElement;
+	private defs: SVGDefsElement;
 	private links: BlipLink[] = [];
-	private positions = new Map<string, Point>();
+	private endpoints = new Map<string, BacklinkEndpoint>();
 	private blipRadius = 0;
+	/** Keeps gradient IDs unique when several radars are open at once */
+	private idPrefix = `radar-backlink-${generateId()}`;
 
 	constructor() {
 		// Same coordinate system as the blips group (origin at the radar center)
 		this.group = createGroup("radar-backlinks", {
 			transform: `translate(${SVG_CONFIG.center},${SVG_CONFIG.center})`,
 		});
+		this.defs = createSvgElement("defs", {});
+		this.group.appendChild(this.defs);
 	}
 
 	getElement(): SVGGElement {
@@ -33,30 +44,51 @@ export class RadarBacklinks {
 	}
 
 	/**
-	 * Replace the set of links and blip positions, then redraw all lines
+	 * Replace the set of links and blip endpoints, then redraw all lines.
+	 * Each line gets its own gradient, fading from the start blip's color
+	 * into the end blip's color.
 	 */
-	render(links: BlipLink[], positions: Map<string, Point>, blipRadius: number): void {
+	render(links: BlipLink[], endpoints: Map<string, BacklinkEndpoint>, blipRadius: number): void {
 		this.links = links;
-		this.positions = positions;
+		this.endpoints = endpoints;
 		this.blipRadius = blipRadius;
-		this.group.innerHTML = "";
+		this.defs.innerHTML = "";
+		this.group.querySelectorAll(".radar-backlink").forEach((el) => el.remove());
 
-		for (const [fromId, toId] of this.links) {
+		this.links.forEach(([fromId, toId], index) => {
+			const from = this.endpoints.get(fromId);
+			const to = this.endpoints.get(toId);
+			if (!from || !to) return;
+
+			const gradientId = `${this.idPrefix}-${index}`;
+			const gradient = createSvgElement("linearGradient", {
+				id: gradientId,
+				gradientUnits: "userSpaceOnUse",
+			});
+			gradient.appendChild(this.createStop("0%", from.color));
+			gradient.appendChild(this.createStop("100%", to.color));
+			this.defs.appendChild(gradient);
+
 			const line = createSvgElement("path", {
 				class: "radar-backlink",
+				stroke: `url(#${gradientId})`,
 				"data-from": fromId,
 				"data-to": toId,
+				"data-gradient": gradientId,
 			});
 			this.group.appendChild(line);
 			this.updateLine(line);
-		}
+		});
 	}
 
 	/**
 	 * Move the endpoints of every line attached to a blip (used while dragging)
 	 */
 	moveBlip(blipId: string, x: number, y: number): void {
-		this.positions.set(blipId, { x, y });
+		const endpoint = this.endpoints.get(blipId);
+		if (!endpoint) return;
+		endpoint.x = x;
+		endpoint.y = y;
 		const lines = this.group.querySelectorAll<SVGPathElement>(
 			`[data-from="${blipId}"], [data-to="${blipId}"]`
 		);
@@ -76,8 +108,8 @@ export class RadarBacklinks {
 	 * trimmed so it starts and ends at the edge of each dot instead of its center
 	 */
 	private updateLine(line: SVGPathElement): void {
-		const from = this.positions.get(line.getAttribute("data-from") ?? "");
-		const to = this.positions.get(line.getAttribute("data-to") ?? "");
+		const from = this.endpoints.get(line.getAttribute("data-from") ?? "");
+		const to = this.endpoints.get(line.getAttribute("data-to") ?? "");
 		if (!from || !to) return;
 
 		const dx = to.x - from.x;
@@ -101,6 +133,21 @@ export class RadarBacklinks {
 			"d",
 			`M ${start.x},${start.y} Q ${control.x},${control.y} ${end.x},${end.y}`
 		);
+
+		// Keep the gradient axis on the line so the fade follows the blips
+		const gradient = this.defs.querySelector(`#${line.getAttribute("data-gradient") ?? ""}`);
+		if (gradient) {
+			setAttributes(gradient as SVGElement, { x1: start.x, y1: start.y, x2: end.x, y2: end.y });
+		}
+	}
+
+	/**
+	 * Create a gradient stop; color goes in style so CSS variables resolve
+	 */
+	private createStop(offset: string, color: string): SVGStopElement {
+		const stop = createSvgElement("stop", { offset });
+		stop.style.setProperty("stop-color", color);
+		return stop;
 	}
 
 	/**

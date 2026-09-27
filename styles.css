@@ -261,8 +261,8 @@
 
 .radar-backlink {
 	fill: none;
-	stroke: var(--text-faint);
-	stroke-width: 1.5;
+	/* stroke is a per-line gradient set in RadarBacklinks */
+	stroke-width: 1.0;
 	stroke-dasharray: 4, 3;
 	stroke-linecap: round;
 	opacity: 0.8;
