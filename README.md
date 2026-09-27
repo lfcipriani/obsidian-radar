@@ -4,6 +4,11 @@
 
 Visualize your notes and ideas on a radar. Group them by topic, prioritize by proximity to the center, and keep focus when juggling multiple areas at once. Do not lose sight of items that might be hiding good opportunities.
 
+> **New in 1.0.0**
+> - You can visualize backlinks between note blips 
+> - Blip setting action bar for better usability, just click on a blip to open
+> - Fixes for lint issues
+
 ![Sample: Project Focus](docs/radar-sample-project-focus.png)
 
 ## Example usage
@@ -21,16 +26,12 @@ Still not sure? Use the [skill](skills/obsidian-radar/SKILL.md) and ask your ass
 
 ## Features
 
-> **New in 0.9.3**
-> - Export radar as an image; 
-> - Double-click to open note blip or rename text blip
-> - Rename text blips
-
 - **Radar visualization** — items (blips) are placed on a radar divided into concentric priority rings and category segments; drag, pan and zoom freely
 - **Two blip types** — link a blip to a vault note, or create a standalone text blip
 - **Priority levels** — 1–8 configurable levels; the closer to the center, the higher the priority
 - **Category segments** — 3–8 configurable segments to group blips by topic or area
 - **Convert text blip to note** — promote any text blip to a linked vault note in one click
+- **Visualize backlinks** — it connects two blips with a line when there's a backlink between the notes
 - **Export as image** — save a high-resolution PNG snapshot of the radar to your vault
 - **Easy to use** — drag notes from the file explorer directly onto the radar, access notes easily
 - **Customizable** — set colors per priority level, per category, and per blip; adjust blip size and label font size. Add new categories and priority levels without changing blip prioritization. Support multiple visualization modes.
