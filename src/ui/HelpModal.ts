@@ -20,8 +20,8 @@ export class HelpModal extends Modal {
 		contentEl.createEl("h3", { text: "Note blips" });
 		const noteList = contentEl.createEl("ul");
 		noteList.createEl("li", { text: "Add — drag a note from the sidebar, toolbar button or right-click on the radar" });
-		noteList.createEl("li", { text: `Open note — double-click or ${mod}+click on the blip` });
-		noteList.createEl("li", { text: "Remove — right-click the blip → remove from radar" });
+		noteList.createEl("li", { text: `Open note — double-click, ${mod}+click, or click the blip → open note` });
+		noteList.createEl("li", { text: "Remove — click or right-click the blip → remove from radar" });
 
 		// Text blips
 		contentEl.createEl("h3", { text: "Text blips" });

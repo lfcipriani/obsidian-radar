@@ -27,6 +27,7 @@ src/
 │   ├── RadarRenderer.ts       # SVG rendering engine
 │   ├── RadarInteractions.ts   # Drag-and-drop, pan, zoom handling
 │   ├── RadarToolbar.ts        # Floating toolbar with action buttons
+│   ├── BlipActionBar.ts       # Floating quick actions above a clicked blip
 │   ├── AddBlipModal.ts        # Modal for adding note blips
 │   ├── AddTextModal.ts        # Modal for adding text blips
 │   ├── CustomizeRadarModal.ts # Modal for priorities, categories, colors, blip size
@@ -132,6 +133,7 @@ RadarView extends TextFileView
 └── Event handlers
     ├── onBlipMove()           → Update position, save
     ├── onBlipClick()          → Context menu / Cmd+click opens note
+    ├── onBlipSingleClick()    → BlipActionBar (note: open, color, remove; text: create note, rename, color, remove)
     ├── onRadarContextMenu()   → Background menu (add, customize, zoom)
     ├── onFileDrop()           → Drop notes from sidebar to add as blips
     ├── onZoomChange()         → Update viewState, renderer

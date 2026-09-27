@@ -57,6 +57,33 @@
 	background: var(--interactive-hover);
 }
 
+/* Floating quick-action bar shown above a clicked blip */
+.radar-blip-actions {
+	position: absolute;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+	z-index: 10;
+}
+
+.radar-blip-actions-buttons {
+	flex-direction: row;
+}
+
+.radar-controls-group.radar-blip-actions-swatches {
+	flex-direction: row;
+	align-items: center;
+	padding: 3px 3px 3px 8px;
+	gap: 5px;
+}
+
+.radar-control-btn.radar-blip-actions-reset {
+	width: 24px;
+	height: 24px;
+	color: var(--text-muted);
+}
+
 /* SVG Container */
 .radar-svg-container {
 	flex: 1;

@@ -9,6 +9,7 @@ import { cartesianToPolar, clamp } from "../utils/polarCoordinates";
 export interface RadarInteractionsOptions {
 	onBlipMove: (blipId: string, r: number, theta: number) => void;
 	onBlipClick: (blipId: string, event: MouseEvent | TouchEvent) => void;
+	onBlipSingleClick: (blipId: string) => void;
 	onBlipDoubleClick: (blipId: string) => void;
 	onRadarContextMenu: (event: MouseEvent) => void;
 	onFileDrop: (event: DragEvent, r: number, theta: number) => void;
@@ -395,6 +396,9 @@ export class RadarInteractions {
 			} else if (event.metaKey || event.ctrlKey) {
 				// Modifier+click - trigger click callback for special handling
 				this.options.onBlipClick(blipId, event);
+			} else {
+				// Plain click - show the blip's quick actions
+				this.options.onBlipSingleClick(blipId);
 			}
 		}
 

@@ -44,6 +44,7 @@ src/
 │   ├── RadarRenderer.ts       # SVG rendering engine
 │   ├── RadarInteractions.ts   # Drag-and-drop, pan, zoom handling
 │   ├── RadarToolbar.ts        # Floating toolbar with action buttons
+│   ├── BlipActionBar.ts       # Floating quick actions above a clicked blip
 │   ├── AddBlipModal.ts        # Modal for adding note blips
 │   ├── AddTextModal.ts        # Modal for adding text blips
 │   ├── CustomizeRadarModal.ts # Modal for priorities, categories, colors, blip size

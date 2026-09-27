@@ -9,6 +9,7 @@ import type { RadarData, Blip, ViewState, TitleMode } from "../types";
 import { VIEW_TYPE_RADAR, SVG_CONFIG, DEFAULT_VIEW_STATE } from "../constants";
 import { RadarRenderer } from "./RadarRenderer";
 import { RadarToolbar } from "./RadarToolbar";
+import { BlipActionBar, type BlipAction } from "./BlipActionBar";
 import { RadarInteractions } from "./RadarInteractions";
 import { AddBlipModal } from "./AddBlipModal";
 import { AddTextModal } from "./AddTextModal";
@@ -27,6 +28,7 @@ export class RadarView extends TextFileView {
 	private priorityLabelsVisible = true;
 	private renderer: RadarRenderer | null = null;
 	private toolbar: RadarToolbar | null = null;
+	private blipActionBar: BlipActionBar | null = null;
 	private interactions: RadarInteractions | null = null;
 	private mainContainer: HTMLElement | null = null;
 	private svgContainer: HTMLElement | null = null;
@@ -82,6 +84,7 @@ export class RadarView extends TextFileView {
 	 */
 	clear(): void {
 		this.radarData = null;
+		this.blipActionBar?.hide();
 		if (this.renderer) {
 			this.renderer.destroy();
 			this.renderer = null;
@@ -121,11 +124,27 @@ export class RadarView extends TextFileView {
 			onZoomOut: () => this.zoomOut(),
 			onResetZoom: () => this.resetZoom(),
 		});
+
+		// Quick-action bar shown above a blip on single click
+		this.blipActionBar = new BlipActionBar(this.mainContainer);
+
+		// Dismiss the action bar on any press outside it, or on Escape
+		this.registerDomEvent(activeDocument, "mousedown", (e) => {
+			if (!this.blipActionBar?.contains(e.target)) {
+				this.blipActionBar?.hide();
+			}
+		});
+		this.registerDomEvent(activeDocument, "keydown", (e) => {
+			if (e.key === "Escape") {
+				this.blipActionBar?.hide();
+			}
+		});
 	}
 
 	async onClose(): Promise<void> {
 		this.clear();
 		this.toolbar = null;
+		this.blipActionBar = null;
 		await super.onClose();
 	}
 
@@ -161,6 +180,8 @@ export class RadarView extends TextFileView {
 	private renderRadar(): void {
 		if (!this.radarData || !this.svgContainer) return;
 
+		this.blipActionBar?.hide();
+
 		// Clean up existing renderer
 		if (this.renderer) {
 			this.renderer.destroy();
@@ -183,6 +204,7 @@ export class RadarView extends TextFileView {
 			{
 				onBlipMove: (blipId, r, theta) => this.onBlipMove(blipId, r, theta),
 				onBlipClick: (blipId, event) => this.onBlipClick(blipId, event),
+				onBlipSingleClick: (blipId) => this.onBlipSingleClick(blipId),
 				onBlipDoubleClick: (blipId) => this.onBlipDoubleClick(blipId),
 				onRadarContextMenu: (event) => this.onRadarContextMenu(event),
 				onFileDrop: (event, r, theta) => this.onFileDrop(event, r, theta),
@@ -258,12 +280,9 @@ export class RadarView extends TextFileView {
 				.setTitle("Edit color")
 				.setIcon("palette")
 				.onClick(() => {
-					new EditBlipColorModal(this.app, blip.color, (color) => {
-						if (!this.radarData) return;
-						this.plugin.radarStore.updateBlip(this.radarData, blipId, { color });
-						this.renderer?.updateData(this.radarData);
-						this.requestSave();
-					}).open();
+					new EditBlipColorModal(this.app, blip.color, (color) =>
+						this.setBlipColor(blipId, color)
+					).open();
 				})
 		);
 
@@ -287,9 +306,82 @@ export class RadarView extends TextFileView {
 	}
 
 	/**
+	 * Handle a plain single click on a blip: show its quick-action bar.
+	 */
+	private onBlipSingleClick(blipId: string): void {
+		const blip = this.radarData?.blips.find((b) => b.id === blipId);
+		if (!blip) return;
+
+		const dot = this.renderer
+			?.getBlipsGroup()
+			.querySelector(`[data-blip-id="${blipId}"] .radar-blip-dot`);
+		if (!dot) return;
+
+		const typeActions: BlipAction[] = [];
+		if (blip.type === "note" && blip.notePath) {
+			typeActions.push({
+				icon: "file",
+				tooltip: "Open note",
+				onClick: () => this.openBlipNote(blipId),
+			});
+		} else if (blip.type === "text") {
+			typeActions.push(
+				{
+					icon: "file-plus",
+					tooltip: "Create a note from this blip",
+					onClick: () => void this.createNoteFromBlip(blip),
+				},
+				{
+					icon: "pencil",
+					tooltip: "Rename",
+					onClick: () => this.openRenameTextModal(blipId, blip.title),
+				}
+			);
+		}
+
+		this.blipActionBar?.show(blipId, dot, [
+			...typeActions,
+			{
+				icon: "palette",
+				tooltip: "Edit color",
+				currentColor: blip.color,
+				onPick: (color) => this.setBlipColor(blipId, color),
+			},
+			{
+				icon: "trash",
+				tooltip: "Remove from radar",
+				onClick: () => this.removeBlip(blipId),
+			},
+		]);
+	}
+
+	/**
+	 * Open the note linked to a note blip in a new tab
+	 */
+	private openBlipNote(blipId: string): void {
+		const blip = this.radarData?.blips.find((b) => b.id === blipId);
+		if (blip?.type === "note" && blip.notePath) {
+			void this.app.workspace.openLinkText(blip.notePath, "", "tab");
+		}
+	}
+
+	/**
+	 * Set or clear a blip's color override
+	 */
+	private setBlipColor(blipId: string, color: string | undefined): void {
+		if (!this.radarData) return;
+
+		this.plugin.radarStore.updateBlip(this.radarData, blipId, { color });
+		this.renderer?.updateData(this.radarData);
+		this.requestSave();
+	}
+
+	/**
 	 * Handle blip double-click: open note blips in a new tab, rename text blips
 	 */
 	private onBlipDoubleClick(blipId: string): void {
+		this.blipActionBar?.hide();
+
 		const blip = this.radarData?.blips.find((b) => b.id === blipId);
 		if (!blip) return;
 
@@ -387,6 +479,8 @@ export class RadarView extends TextFileView {
 	private onBlipMove(blipId: string, r: number, theta: number): void {
 		if (!this.radarData) return;
 
+		this.blipActionBar?.hide();
+
 		this.plugin.radarStore.updateBlipPosition(this.radarData, blipId, r, theta);
 		this.requestSave();
 	}
@@ -396,6 +490,7 @@ export class RadarView extends TextFileView {
 	 */
 	private onZoomChange(zoom: number): void {
 		this.viewState.zoom = zoom;
+		this.blipActionBar?.hide();
 		this.renderer?.setZoom(zoom);
 	}
 
@@ -405,6 +500,7 @@ export class RadarView extends TextFileView {
 	private onPanChange(panX: number, panY: number): void {
 		this.viewState.panX = panX;
 		this.viewState.panY = panY;
+		this.blipActionBar?.hide();
 		this.renderer?.setPan(panX, panY);
 	}
 
@@ -581,6 +677,7 @@ export class RadarView extends TextFileView {
 		}
 
 		if (changed) {
+			this.blipActionBar?.hide();
 			this.renderer?.updateData(this.radarData);
 			this.requestSave();
 		}
@@ -627,6 +724,9 @@ export class RadarView extends TextFileView {
 	private removeBlip(blipId: string): void {
 		if (!this.radarData) return;
 
+		if (this.blipActionBar?.isShownFor(blipId)) {
+			this.blipActionBar.hide();
+		}
 		this.plugin.radarStore.removeBlip(this.radarData, blipId);
 		this.renderer?.removeBlip(blipId);
 		this.requestSave();
