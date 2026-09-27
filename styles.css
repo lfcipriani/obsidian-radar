@@ -260,8 +260,9 @@
 }
 
 .radar-backlink {
+	fill: none;
 	stroke: var(--text-faint);
-	stroke-width: 1;
+	stroke-width: 1.5;
 	stroke-dasharray: 4, 3;
 	stroke-linecap: round;
 	opacity: 0.8;
