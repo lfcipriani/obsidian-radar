@@ -103,4 +103,15 @@ export function registerCommands(plugin: RadarPlugin): void {
 			return true;
 		},
 	});
+
+	plugin.addCommand({
+		id: "toggle-backlinks",
+		name: "Toggle backlinks",
+		checkCallback: (checking) => {
+			const view = plugin.app.workspace.getActiveViewOfType(RadarView);
+			if (!view) return false;
+			if (!checking) view.toggleBacklinks();
+			return true;
+		},
+	});
 }

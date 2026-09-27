@@ -253,6 +253,24 @@
 	display: none;
 }
 
+/* Backlink lines between blips whose notes link to each other.
+   Drawn above blips but never intercept clicks or drags. */
+.radar-backlinks {
+	pointer-events: none;
+}
+
+.radar-backlink {
+	stroke: var(--text-faint);
+	stroke-width: 1;
+	stroke-dasharray: 4, 3;
+	stroke-linecap: round;
+	opacity: 0.8;
+}
+
+.radar-backlinks-hidden {
+	display: none;
+}
+
 /* Titles hidden mode: hide all, reveal on hover (full if truncated, plain otherwise) */
 .radar-titles-hidden .radar-blip-title {
 	display: none;

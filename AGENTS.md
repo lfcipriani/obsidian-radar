@@ -35,7 +35,7 @@ src/
 ├── types.ts                   # TypeScript interfaces and types
 ├── constants.ts               # Default values and SVG configuration
 ├── commands/
-│   ├── index.ts               # Command registration (9 commands)
+│   ├── index.ts               # Command registration (10 commands)
 │   └── createRadar.ts         # Create new radar command
 ├── data/
 │   └── RadarStore.ts          # Data persistence layer
@@ -43,6 +43,7 @@ src/
 │   ├── RadarView.ts           # Main view (extends TextFileView)
 │   ├── RadarRenderer.ts       # SVG rendering engine
 │   ├── RadarInteractions.ts   # Drag-and-drop, pan, zoom handling
+│   ├── RadarBacklinks.ts      # Dashed lines between linked note blips
 │   ├── RadarToolbar.ts        # Floating toolbar with action buttons
 │   ├── BlipActionBar.ts       # Floating quick actions above a clicked blip
 │   ├── AddBlipModal.ts        # Modal for adding note blips
@@ -50,6 +51,7 @@ src/
 │   ├── CustomizeRadarModal.ts # Modal for priorities, categories, colors, blip size
 │   └── HelpModal.ts           # Quick-reference help modal
 └── utils/
+    ├── backlinks.ts           # Find note blips linked to each other
     ├── idGenerator.ts         # UUID generation
     ├── polarCoordinates.ts    # Polar ↔ Cartesian math + blip repositioning
     └── svgHelpers.ts          # SVG element creation helpers

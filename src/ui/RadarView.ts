@@ -16,6 +16,7 @@ import { AddTextModal } from "./AddTextModal";
 import { CustomizeRadarModal } from "./CustomizeRadarModal";
 import { HelpModal } from "./HelpModal";
 import { ExportImageModal } from "./ExportImageModal";
+import { findBlipLinks } from "../utils/backlinks";
 import { rotateBlipsWithCategories, repositionBlipsWithPriorities } from "../utils/polarCoordinates";
 
 export class RadarView extends TextFileView {
@@ -25,6 +26,7 @@ export class RadarView extends TextFileView {
 	private titleMode: TitleMode = "crop";
 	private glowVisible = true;
 	private priorityLabelsVisible = true;
+	private backlinksVisible = true;
 	private renderer: RadarRenderer | null = null;
 	private toolbar: RadarToolbar | null = null;
 	private blipActionBar: BlipActionBar | null = null;
@@ -119,6 +121,7 @@ export class RadarView extends TextFileView {
 			onToggleTitles: () => this.toggleTitles(),
 			onToggleGlow: () => this.toggleGlow(),
 			onTogglePriorityLabels: () => this.togglePriorityLabels(),
+			onToggleBacklinks: () => this.toggleBacklinks(),
 			onZoomIn: () => this.zoomIn(),
 			onZoomOut: () => this.zoomOut(),
 			onResetZoom: () => this.resetZoom(),
@@ -140,6 +143,14 @@ export class RadarView extends TextFileView {
 				this.blipActionBar?.hide();
 			}
 		});
+
+		// Redraw backlink lines whenever the vault's link graph is re-resolved
+		// (a link added to or removed from a note, a note renamed, etc.)
+		this.registerEvent(
+			this.app.metadataCache.on("resolved", () => {
+				this.renderer?.renderBacklinks();
+			})
+		);
 	}
 
 	async onClose(): Promise<void> {
@@ -195,7 +206,9 @@ export class RadarView extends TextFileView {
 		this.svgContainer.empty();
 
 		// Create renderer
-		this.renderer = new RadarRenderer(this.svgContainer, this.radarData);
+		this.renderer = new RadarRenderer(this.svgContainer, this.radarData, (blips) =>
+			findBlipLinks(blips, this.app.metadataCache.resolvedLinks)
+		);
 
 		// Create interactions handler
 		this.interactions = new RadarInteractions(
@@ -204,6 +217,7 @@ export class RadarView extends TextFileView {
 			this.renderer.getBlipsGroup(),
 			{
 				onBlipMove: (blipId, r, theta) => this.onBlipMove(blipId, r, theta),
+				onBlipDrag: (blipId, x, y) => this.renderer?.moveBlipBacklinks(blipId, x, y),
 				onBlipModifierClick: (blipId) => this.onBlipModifierClick(blipId),
 				onBlipSingleClick: (blipId) => this.onBlipSingleClick(blipId),
 				onBlipDoubleClick: (blipId) => this.onBlipDoubleClick(blipId),
@@ -225,6 +239,7 @@ export class RadarView extends TextFileView {
 		this.toolbar?.setTitleMode(this.titleMode);
 		this.renderer.setGlowVisible(this.glowVisible);
 		this.renderer.setPriorityLabelsVisible(this.priorityLabelsVisible);
+		this.renderer.setBacklinksVisible(this.backlinksVisible);
 	}
 
 	/**
@@ -419,6 +434,7 @@ export class RadarView extends TextFileView {
 		this.blipActionBar?.hide();
 
 		this.plugin.radarStore.updateBlipPosition(this.radarData, blipId, r, theta);
+		this.renderer?.updateBlipPosition(blipId, r, theta);
 		this.requestSave();
 	}
 
@@ -736,6 +752,12 @@ export class RadarView extends TextFileView {
 		this.priorityLabelsVisible = !this.priorityLabelsVisible;
 		this.toolbar?.setPriorityLabelsVisible(this.priorityLabelsVisible);
 		this.renderer?.setPriorityLabelsVisible(this.priorityLabelsVisible);
+	}
+
+	toggleBacklinks(): void {
+		this.backlinksVisible = !this.backlinksVisible;
+		this.toolbar?.setBacklinksVisible(this.backlinksVisible);
+		this.renderer?.setBacklinksVisible(this.backlinksVisible);
 	}
 
 	zoomIn(): void {

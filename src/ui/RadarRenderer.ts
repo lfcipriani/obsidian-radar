@@ -15,6 +15,8 @@ import {
 	createGroup,
 	setAttributes,
 } from "../utils/svgHelpers";
+import type { BlipLink } from "../utils/backlinks";
+import { RadarBacklinks } from "./RadarBacklinks";
 
 export class RadarRenderer {
 	private static readonly categoryLabelRadiusOffset = 28;
@@ -32,6 +34,7 @@ export class RadarRenderer {
 	private categoryGroup: SVGGElement;
 	private priorityLabelsGroup: SVGGElement;
 	private blipsGroup: SVGGElement;
+	private backlinks: RadarBacklinks;
 	private radarData: RadarData;
 
 	// Transform state
@@ -41,7 +44,8 @@ export class RadarRenderer {
 
 	constructor(
 		private container: HTMLElement,
-		radarData: RadarData
+		radarData: RadarData,
+		private getLinks: (blips: Blip[]) => BlipLink[] = () => []
 	) {
 		this.radarData = radarData;
 
@@ -56,6 +60,7 @@ export class RadarRenderer {
 		this.blipsGroup = createGroup("radar-blips", {
 			transform: `translate(${SVG_CONFIG.center},${SVG_CONFIG.center})`,
 		});
+		this.backlinks = new RadarBacklinks();
 
 		this.svg.appendChild(this.defsEl);
 		this.svg.appendChild(this.backgroundGroup);
@@ -64,6 +69,8 @@ export class RadarRenderer {
 		this.svg.appendChild(this.categoryGroup);
 		this.svg.appendChild(this.priorityLabelsGroup);
 		this.svg.appendChild(this.blipsGroup);
+		// Backlinks sit above blips so a line stays visible when it crosses another blip
+		this.svg.appendChild(this.backlinks.getElement());
 		this.container.appendChild(this.svg);
 
 		this.render();
@@ -78,6 +85,25 @@ export class RadarRenderer {
 		this.renderCategorySegments();
 		this.renderCategoryDividers();
 		this.renderBlips();
+		this.renderBacklinks();
+	}
+
+	/**
+	 * Redraw the dashed lines between blips whose notes link to each other
+	 */
+	renderBacklinks(): void {
+		const positions = new Map<string, { x: number; y: number }>();
+		for (const blip of this.radarData.blips) {
+			positions.set(blip.id, polarToCartesian(blip.r, blip.theta, SVG_CONFIG.maxRadius));
+		}
+		this.backlinks.render(this.getLinks(this.radarData.blips), positions, this.radarData.blipRadius);
+	}
+
+	/**
+	 * Follow a blip being dragged with its backlink lines
+	 */
+	moveBlipBacklinks(blipId: string, x: number, y: number): void {
+		this.backlinks.moveBlip(blipId, x, y);
 	}
 
 	/**
@@ -433,6 +459,7 @@ export class RadarRenderer {
 			setAttributes(blipGroup, {
 				transform: `translate(${pos.x},${pos.y})`,
 			});
+			this.backlinks.moveBlip(blipId, pos.x, pos.y);
 		}
 	}
 
@@ -441,6 +468,7 @@ export class RadarRenderer {
 	 */
 	addBlip(blip: Blip): void {
 		this.renderBlip(blip);
+		this.renderBacklinks();
 	}
 
 	/**
@@ -451,6 +479,7 @@ export class RadarRenderer {
 		if (blipGroup) {
 			blipGroup.remove();
 		}
+		this.renderBacklinks();
 	}
 
 	/**
@@ -538,6 +567,13 @@ export class RadarRenderer {
 		} else {
 			this.priorityLabelsGroup.addClass("radar-priority-labels-hidden");
 		}
+	}
+
+	/**
+	 * Show or hide the backlink lines between blips
+	 */
+	setBacklinksVisible(visible: boolean): void {
+		this.backlinks.setVisible(visible);
 	}
 
 	/**

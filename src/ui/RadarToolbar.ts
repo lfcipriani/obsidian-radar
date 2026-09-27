@@ -14,6 +14,7 @@ export interface RadarToolbarOptions {
 	onToggleTitles: () => void;
 	onToggleGlow: () => void;
 	onTogglePriorityLabels: () => void;
+	onToggleBacklinks: () => void;
 	onZoomIn: () => void;
 	onZoomOut: () => void;
 	onResetZoom: () => void;
@@ -24,6 +25,7 @@ export class RadarToolbar {
 	private titlesBtn: HTMLButtonElement | null = null;
 	private glowBtn: HTMLButtonElement | null = null;
 	private priorityLabelsBtn: HTMLButtonElement | null = null;
+	private backlinksBtn: HTMLButtonElement | null = null;
 
 	constructor(container: HTMLElement, options: RadarToolbarOptions) {
 		this.container = container;
@@ -44,11 +46,12 @@ export class RadarToolbar {
 		this.addButton(zoomGroup, "maximize", "Reset zoom", options.onResetZoom);
 		this.addButton(zoomGroup, "minus", "Zoom out", options.onZoomOut);
 
-		// Design group: toggle titles, toggle glow, toggle priority labels
+		// Design group: toggle titles, toggle glow, toggle priority labels, toggle backlinks
 		const designGroup = this.container.createDiv({ cls: "radar-controls-group" });
 		this.titlesBtn = this.addButton(designGroup, "eye-off", "Hide titles", options.onToggleTitles);
 		this.glowBtn = this.addButton(designGroup, "star-off", "Hide glow", options.onToggleGlow);
 		this.priorityLabelsBtn = this.addButton(designGroup, "circle-parking-off", "Hide priority levels", options.onTogglePriorityLabels);
+		this.backlinksBtn = this.addButton(designGroup, "repeat-off", "Hide backlinks", options.onToggleBacklinks);
 
 		// Settings group: customize, help
 		const settingsGroup = this.container.createDiv({ cls: "radar-controls-group" });
@@ -83,6 +86,15 @@ export class RadarToolbar {
 		if (!this.priorityLabelsBtn) return;
 		setIcon(this.priorityLabelsBtn, visible ? "circle-parking-off" : "circle-parking");
 		setTooltip(this.priorityLabelsBtn, visible ? "Hide priority levels" : "Show priority levels", {
+			placement: "left",
+			delay: 500,
+		});
+	}
+
+	setBacklinksVisible(visible: boolean): void {
+		if (!this.backlinksBtn) return;
+		setIcon(this.backlinksBtn, visible ? "repeat-off" : "repeat");
+		setTooltip(this.backlinksBtn, visible ? "Hide backlinks" : "Show backlinks", {
 			placement: "left",
 			delay: 500,
 		});

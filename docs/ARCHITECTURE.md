@@ -140,6 +140,7 @@ RadarView extends TextFileView
     ├── toggleTitles()         → Show/hide blip labels
     ├── toggleGlow()           → Show/hide glow halos
     ├── togglePriorityLabels() → Show/hide ring labels
+    ├── toggleBacklinks()      → Show/hide backlink lines
     ├── zoomIn/zoomOut/resetZoom()
     └── createNoteFromBlip()   → Converts text blip to note blip
 ```
@@ -157,13 +158,16 @@ RadarRenderer
 │   ├── renderPrioritySegments()    → Colored annulus fills (opacity 0.12)
 │   ├── renderCategorySegments()    → Colored wedge fills (opacity 0.12)
 │   ├── renderCategoryDividers()    → Lines from center + curved arc labels
-│   └── renderBlips()              → Positioned blips with glow halos + titles
+│   ├── renderBlips()              → Positioned blips with glow halos + titles
+│   └── renderBacklinks()          → Dashed lines between linked note blips (RadarBacklinks)
 ├── updateBlipPosition()            → Move single blip
 ├── addBlip() / removeBlip()        → Dynamic updates
 ├── setTransform() / setZoom() / setPan()  → View transforms
 ├── setTitlesVisible()              → Toggle .titles-hidden class
 ├── setGlowVisible()                → Toggle .glow-hidden class
 ├── setPriorityLabelsVisible()      → Toggle .priority-labels-hidden class
+├── setBacklinksVisible()           → Toggle .radar-backlinks-hidden class
+├── moveBlipBacklinks()             → Follow a dragged blip with its lines
 └── destroy()                       → Cleanup
 ```
 
@@ -192,6 +196,9 @@ RadarRenderer
   <g class="radar-blips" transform="translate(600,600) scale(zoom) translate(-panX,-panY)">
     <!-- Blip groups: glow halo + circle + short/full title -->
   </g>
+  <g class="radar-backlinks" transform="translate(600,600)">
+    <!-- Dashed lines between note blips that link to each other (above blips, pointer-events: none) -->
+  </g>
 </svg>
 ```
 
@@ -203,7 +210,7 @@ Handles all user input separately from rendering:
 RadarInteractions
 ├── Drag (blips)
 │   ├── mousedown / touchstart → Start drag (threshold 5px)
-│   ├── mousemove / touchmove  → Update blip position
+│   ├── mousemove / touchmove  → Update blip position, emit onBlipDrag(id, x, y)
 │   └── mouseup / touchend    → End drag, emit onBlipMove(id, r, theta);
 │                                without movement, click/tap emits onBlipSingleClick
 ├── Pan (background)
@@ -232,11 +239,13 @@ Floating icon-only control panel rendered into `radar-controls`:
 RadarToolbar
 ├── Actions group:  Add note blip, Add text blip
 ├── Zoom group:     Zoom in, Reset zoom, Zoom out
-├── Design group:   Toggle titles, Toggle glow, Toggle priority labels
+├── Design group:   Toggle titles, Toggle glow, Toggle priority labels, Toggle backlinks
 └── Settings group: Customize radar, Help
 ```
 
-Callbacks defined via `RadarToolbarOptions` (10 handlers). Icon and tooltip update when a toggle state changes via `setTitlesVisible()`, `setGlowVisible()`, `setPriorityLabelsVisible()`.
+Callbacks defined via `RadarToolbarOptions` (11 handlers). Icon and tooltip update when a toggle state changes via `setTitleMode()`, `setGlowVisible()`, `setPriorityLabelsVisible()`, `setBacklinksVisible()`.
+
+**Backlinks:** `utils/backlinks.ts` (`findBlipLinks`) pairs note blips whose notes link to each other in either direction, using `metadataCache.resolvedLinks`. `RadarView` passes it to the renderer and re-renders the lines on the `metadataCache` `resolved` event, so adding or removing a link in a note updates the radar.
 
 ### 7. Data Layer (`data/RadarStore.ts`)
 
@@ -277,7 +286,7 @@ RadarStore
 
 ### 9. Commands (`commands/index.ts`)
 
-Nine commands registered, all prefixed with `radar-`:
+Ten commands registered, all prefixed with `radar-`:
 
 | Scope | Command |
 |---|---|
@@ -290,6 +299,7 @@ Nine commands registered, all prefixed with `radar-`:
 | View-scoped | Toggle blip titles |
 | View-scoped | Toggle glow |
 | View-scoped | Toggle priority labels |
+| View-scoped | Toggle backlinks |
 
 View-scoped commands use `checkCallback` and are only active when a RadarView is focused.
 

@@ -8,6 +8,8 @@ import { cartesianToPolar, clamp } from "../utils/polarCoordinates";
 
 export interface RadarInteractionsOptions {
 	onBlipMove: (blipId: string, r: number, theta: number) => void;
+	/** Fired on every pointer move while a blip is dragged (radar-centered SVG coords) */
+	onBlipDrag: (blipId: string, x: number, y: number) => void;
 	onBlipModifierClick: (blipId: string) => void;
 	onBlipSingleClick: (blipId: string) => void;
 	onBlipDoubleClick: (blipId: string) => void;
@@ -315,6 +317,11 @@ export class RadarInteractions {
 			"transform",
 			`translate(${clampedX},${clampedY})`
 		);
+
+		const blipId = this.draggedBlip.getAttribute("data-blip-id");
+		if (blipId) {
+			this.options.onBlipDrag(blipId, clampedX, clampedY);
+		}
 	}
 
 	/**
