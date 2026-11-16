@@ -49,6 +49,7 @@ RadarData
 ├── name: string               # Display name
 ├── blipRadius: number         # Blip dot size in px (3–20, default 5)
 ├── blipColor?: string         # Radar-wide default blip color (hex)
+├── settings?: {key: string|boolean|number}  # Toolbar toggles etc. (validated in data/radarSettings.ts)
 ├── priorityLevels[]           # Concentric rings (1–7)
 │   ├── id: string
 │   ├── name: string           # e.g., "Critical", "High"
@@ -267,11 +268,14 @@ RadarStore
 │   ├── setPriorityLevels()
 │   ├── setCategories()
 │   ├── setBlipRadius()
-│   └── setBlipColor()
+│   ├── setBlipColor()
+│   └── setSetting()         → Write one key into `settings`
 └── listRadarFiles() / isRadarFile()  → Vault utilities
 ```
 
 `normalizeRadarData()` runs on every load to handle legacy data (e.g. Obsidian CSS variable strings converted to hex) and enforce invariants.
+
+`data/radarSettings.ts` keeps only string/boolean/number entries of `settings` (unknown keys are preserved) and `readDisplaySettings()` validates the toolbar toggles (`showBlipName`, `showGlow`, `showPriorityLevelLabels`, `showBacklinks`), falling back to defaults for invalid values. `RadarView` loads these on `setViewData()` and writes them back on each toggle.
 
 ### 8. Modals
 

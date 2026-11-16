@@ -4,7 +4,7 @@
  */
 
 import { App, TFile, TFolder, normalizePath } from "obsidian";
-import type { RadarData, Blip, PriorityLevel, Category } from "../types";
+import type { RadarData, Blip, PriorityLevel, Category, RadarSettingValue } from "../types";
 import {
 	DEFAULT_PRIORITIES,
 	DEFAULT_CATEGORIES,
@@ -18,6 +18,7 @@ import {
 	CSS_VAR_TO_HEX,
 } from "../constants";
 import { generateId } from "../utils/idGenerator";
+import { normalizeSettings } from "./radarSettings";
 
 export class RadarStore {
 	constructor(private app: App) {}
@@ -79,6 +80,7 @@ export class RadarStore {
 			blipRadius: this.normalizeBlipRadius(data.blipRadius),
 			blipFontSize: this.normalizeBlipFontSize(data.blipFontSize),
 			blipColor: this.normalizeColor(data.blipColor),
+			settings: normalizeSettings(data.settings),
 			blips: (data.blips ?? []).map((b) => ({ ...b, color: this.normalizeColor(b.color) })),
 		};
 	}
@@ -157,6 +159,13 @@ export class RadarStore {
 	 */
 	setBlipFontSize(radar: RadarData, blipFontSize: number): void {
 		radar.blipFontSize = this.normalizeBlipFontSize(blipFontSize);
+	}
+
+	/**
+	 * Set a single key in the radar's settings object
+	 */
+	setSetting(radar: RadarData, key: string, value: RadarSettingValue): void {
+		radar.settings = { ...radar.settings, [key]: value };
 	}
 
 	/**

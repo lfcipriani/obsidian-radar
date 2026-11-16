@@ -5,7 +5,8 @@
 
 import { TextFileView, WorkspaceLeaf, Menu, TFile, normalizePath, Notice } from "obsidian";
 import type RadarPlugin from "../main";
-import type { RadarData, Blip, ViewState, TitleMode } from "../types";
+import type { RadarData, Blip, ViewState, TitleMode, DisplaySettings } from "../types";
+import { readDisplaySettings } from "../data/radarSettings";
 import { VIEW_TYPE_RADAR, SVG_CONFIG, DEFAULT_VIEW_STATE } from "../constants";
 import { RadarRenderer } from "./RadarRenderer";
 import { RadarToolbar } from "./RadarToolbar";
@@ -73,6 +74,7 @@ export class RadarView extends TextFileView {
 			this.radarData = this.plugin.radarStore.normalizeRadarData(
 				JSON.parse(data) as Partial<RadarData>
 			);
+			this.loadDisplaySettings(this.radarData);
 			this.renderRadar();
 		} catch (error) {
 			console.error("Failed to parse radar data:", error);
@@ -238,8 +240,31 @@ export class RadarView extends TextFileView {
 		this.renderer.setTitleMode(this.titleMode);
 		this.toolbar?.setTitleMode(this.titleMode);
 		this.renderer.setGlowVisible(this.glowVisible);
+		this.toolbar?.setGlowVisible(this.glowVisible);
 		this.renderer.setPriorityLabelsVisible(this.priorityLabelsVisible);
+		this.toolbar?.setPriorityLabelsVisible(this.priorityLabelsVisible);
 		this.renderer.setBacklinksVisible(this.backlinksVisible);
+		this.toolbar?.setBacklinksVisible(this.backlinksVisible);
+	}
+
+	/**
+	 * Load toolbar toggle states from the radar's settings (invalid values fall back to defaults)
+	 */
+	private loadDisplaySettings(radar: RadarData): void {
+		const display = readDisplaySettings(radar.settings);
+		this.titleMode = display.showBlipName;
+		this.glowVisible = display.showGlow;
+		this.priorityLabelsVisible = display.showPriorityLevelLabels;
+		this.backlinksVisible = display.showBacklinks;
+	}
+
+	/**
+	 * Persist a toolbar toggle state into the radar's settings
+	 */
+	private saveSetting(key: keyof DisplaySettings, value: DisplaySettings[keyof DisplaySettings]): void {
+		if (!this.radarData) return;
+		this.plugin.radarStore.setSetting(this.radarData, key, value);
+		this.requestSave();
 	}
 
 	/**
@@ -732,32 +757,36 @@ export class RadarView extends TextFileView {
 
 	toggleTitles(): void {
 		if (this.titleMode === "crop") {
-			this.titleMode = "hidden";
-		} else if (this.titleMode === "hidden") {
+			this.titleMode = "hide";
+		} else if (this.titleMode === "hide") {
 			this.titleMode = "full";
 		} else {
 			this.titleMode = "crop";
 		}
 		this.toolbar?.setTitleMode(this.titleMode);
 		this.renderer?.setTitleMode(this.titleMode);
+		this.saveSetting("showBlipName", this.titleMode);
 	}
 
 	toggleGlow(): void {
 		this.glowVisible = !this.glowVisible;
 		this.toolbar?.setGlowVisible(this.glowVisible);
 		this.renderer?.setGlowVisible(this.glowVisible);
+		this.saveSetting("showGlow", this.glowVisible);
 	}
 
 	togglePriorityLabels(): void {
 		this.priorityLabelsVisible = !this.priorityLabelsVisible;
 		this.toolbar?.setPriorityLabelsVisible(this.priorityLabelsVisible);
 		this.renderer?.setPriorityLabelsVisible(this.priorityLabelsVisible);
+		this.saveSetting("showPriorityLevelLabels", this.priorityLabelsVisible);
 	}
 
 	toggleBacklinks(): void {
 		this.backlinksVisible = !this.backlinksVisible;
 		this.toolbar?.setBacklinksVisible(this.backlinksVisible);
 		this.renderer?.setBacklinksVisible(this.backlinksVisible);
+		this.saveSetting("showBacklinks", this.backlinksVisible);
 	}
 
 	zoomIn(): void {

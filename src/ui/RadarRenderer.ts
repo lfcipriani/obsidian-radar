@@ -543,7 +543,7 @@ export class RadarRenderer {
 	setTitleMode(mode: TitleMode): void {
 		this.blipsGroup.removeClass("radar-titles-hidden");
 		this.blipsGroup.removeClass("radar-titles-full");
-		if (mode === "hidden") {
+		if (mode === "hide") {
 			this.blipsGroup.addClass("radar-titles-hidden");
 		} else if (mode === "full") {
 			this.blipsGroup.addClass("radar-titles-full");

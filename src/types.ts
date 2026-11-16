@@ -7,7 +7,7 @@
 export type BlipType = "note" | "text";
 
 /** Title display mode for blips */
-export type TitleMode = "crop" | "hidden" | "full";
+export type TitleMode = "crop" | "hide" | "full";
 
 /** A blip represents an item on the radar */
 export interface Blip {
@@ -73,8 +73,24 @@ export interface RadarData {
 	blipFontSize: number;
 	/** Default blip color (overrides accent; individual blips may override this) */
 	blipColor?: string;
+	/** Free-form key-value settings (values validated in code, not by the format) */
+	settings?: RadarSettings;
 	/** Blips on the radar */
 	blips: Blip[];
+}
+
+/** A value allowed in the radar `settings` object */
+export type RadarSettingValue = string | boolean | number;
+
+/** Key-value settings stored in a radar file */
+export type RadarSettings = Record<string, RadarSettingValue>;
+
+/** Toolbar display toggles, persisted in the radar `settings` object */
+export interface DisplaySettings {
+	showBlipName: TitleMode;
+	showGlow: boolean;
+	showPriorityLevelLabels: boolean;
+	showBacklinks: boolean;
 }
 
 /** Plugin settings stored via Obsidian's data API */

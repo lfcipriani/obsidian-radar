@@ -64,7 +64,7 @@ export class RadarToolbar {
 		if (mode === "crop") {
 			setIcon(this.titlesBtn, "eye-off");
 			setTooltip(this.titlesBtn, "Hide names", { placement: "left", delay: 500 });
-		} else if (mode === "hidden") {
+		} else if (mode === "hide") {
 			setIcon(this.titlesBtn, "eye");
 			setTooltip(this.titlesBtn, "Show full names", { placement: "left", delay: 500 });
 		} else {

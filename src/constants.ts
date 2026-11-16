@@ -3,7 +3,7 @@
  * Default values and configuration
  */
 
-import type { PriorityLevel, Category, RadarPluginSettings, ViewState } from "./types";
+import type { PriorityLevel, Category, RadarPluginSettings, ViewState, DisplaySettings } from "./types";
 
 /** View type identifier for the radar view */
 export const VIEW_TYPE_RADAR = "radar-view";
@@ -42,6 +42,14 @@ export const CSS_VAR_TO_HEX: Record<string, string> = {
 export const DEFAULT_SETTINGS: RadarPluginSettings = {
 	defaultPriorityCount: 4,
 	defaultCategoryCount: 4,
+};
+
+/** Default toolbar display toggles, used when a setting is absent or invalid */
+export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = {
+	showBlipName: "crop",
+	showGlow: true,
+	showPriorityLevelLabels: true,
+	showBacklinks: true,
 };
 
 /** Default radius of blip circles in pixels */

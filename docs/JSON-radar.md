@@ -1,4 +1,4 @@
-# JSON Radar Spec 0.9
+# JSON Radar Spec 1.0
 
 This document describes the JSON format used to store `.radar` files.
 
@@ -17,6 +17,7 @@ Files use the `.radar` extension and are stored in the Obsidian vault like any o
   "blipRadius": 5,
   "blipFontSize": 7,
   "blipColor": "#027aff",
+  "settings": {...},
   "blips": [...]
 }
 ```
@@ -28,6 +29,7 @@ Files use the `.radar` extension and are stored in the Obsidian vault like any o
 | `blipRadius` | number | yes | Radius of all blip circles in pixels |
 | `blipFontSize` | number | yes | Font size for blip labels in pixels |
 | `blipColor` | string | no | Default blip color (hex). Should fall back to a default color if absent. |
+| `settings` | object | no | Key-value display/client settings. See [Settings](#settings). |
 | `blips` | array | yes | Items placed on the radar |
 
 ## Priority levels
@@ -128,6 +130,23 @@ Any valid hex color may be stored. Color fields are optional throughout; when ab
 
 `blipFontSize` is an integer (or float) number of pixels applied to all blip labels. Valid range: `3`–`12`. Default: `7`.
 
+## Settings
+
+`settings` is an optional flat key-value object. Values must be a string, boolean or number; nested objects, arrays and `null` are not allowed.
+
+The format itself does not validate setting values — each client validates the keys it understands. A client must ignore (not fail on) a setting whose value it doesn't recognize, and apply its own default instead. Clients should preserve keys they don't understand when saving, so settings written by other clients aren't lost.
+
+The following settings are defined. They mirror the radar toolbar toggles:
+
+| Key | Type | Valid values | Default | Description |
+|---|---|---|---|---|
+| `showBlipName` | string | `"hide"`, `"full"`, `"crop"` | `"crop"` | How blip labels are displayed: hidden, full text, or cropped. |
+| `showGlow` | boolean | `true`, `false` | `true` | Show the glow halo around blips. |
+| `showPriorityLevelLabels` | boolean | `true`, `false` | `true` | Show the priority level labels on the rings. |
+| `showBacklinks` | boolean | `true`, `false` | `true` | Show lines between note blips that link to each other. |
+
+Example: `{ "showBlipName": "show" }` is not a valid value, so the client ignores it and uses `"crop"`.
+
 ## Complete example
 
 ```json
@@ -147,6 +166,12 @@ Any valid hex color may be stored. Color fields are optional throughout; when ab
   "blipRadius": 6,
   "blipFontSize": 7,
   "blipColor": "#53dfdd",
+  "settings": {
+    "showBlipName": "full",
+    "showGlow": false,
+    "showPriorityLevelLabels": true,
+    "showBacklinks": true
+  },
   "blips": [
     {
       "id": "11111111-1111-1111-1111-111111111111",
