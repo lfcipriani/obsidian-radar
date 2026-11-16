@@ -4,7 +4,8 @@
  */
 
 import { App, Modal, Setting } from "obsidian";
-import type { RadarData, PriorityLevel, Category } from "../types";
+import type { RadarData, PriorityLevel, Category, BlipColorSettings } from "../types";
+import { readBlipColorSettings } from "../data/radarSettings";
 import { generateId } from "../utils/idGenerator";
 import { MAX_BLIP_RADIUS, MIN_BLIP_RADIUS, MAX_BLIP_FONT_SIZE, MIN_BLIP_FONT_SIZE } from "../constants";
 import { fillColorSwatches } from "../utils/colorSwatches";
@@ -23,6 +24,7 @@ export interface CustomizeRadarModalOptions {
 	onBlipRadiusChanged: (blipRadius: number) => void;
 	onBlipFontSizeChanged: (blipFontSize: number) => void;
 	onBlipColorChanged: (color: string | undefined) => void;
+	onBlipColorSettingsChanged: (settings: BlipColorSettings) => void;
 }
 
 export class CustomizeRadarModal extends Modal {
@@ -31,6 +33,7 @@ export class CustomizeRadarModal extends Modal {
 	private blipRadius: number;
 	private blipFontSize: number;
 	private blipColor: string | undefined;
+	private blipColorSettings: BlipColorSettings;
 	private options: CustomizeRadarModalOptions;
 
 	constructor(
@@ -47,6 +50,7 @@ export class CustomizeRadarModal extends Modal {
 		this.blipRadius = radarData.blipRadius;
 		this.blipFontSize = radarData.blipFontSize;
 		this.blipColor = radarData.blipColor;
+		this.blipColorSettings = readBlipColorSettings(radarData.settings);
 		this.options = options;
 	}
 
@@ -323,6 +327,52 @@ export class CustomizeRadarModal extends Modal {
 		if (resetBtnEl) {
 			colorSetting.controlEl.insertBefore(swatchContainer, resetBtnEl);
 		}
+
+		this.renderDynamicColorSettings(container);
+	}
+
+	/**
+	 * Toggles to color note blips from their note's frontmatter property or tags.
+	 * Precedence: property → tag → blip color → default blip color.
+	 */
+	private renderDynamicColorSettings(container: HTMLElement): void {
+		const notify = () => this.options.onBlipColorSettingsChanged({ ...this.blipColorSettings });
+
+		new Setting(container)
+			.setName("Blip color from property")
+			.setDesc("Color note blips from a frontmatter property holding a hex code or color name. Takes precedence over tags.")
+			.addToggle((toggle) =>
+				toggle.setValue(this.blipColorSettings.blipColorByProperty).onChange((value) => {
+					this.blipColorSettings.blipColorByProperty = value;
+					notify();
+					this.refresh();
+				})
+			);
+
+		if (this.blipColorSettings.blipColorByProperty) {
+			new Setting(container)
+				.setName("Color property name")
+				.setDesc("Frontmatter property to read the color from. Example values: #a882ff, a882ff or purple")
+				.addText((text) =>
+					text
+						.setPlaceholder("Color")
+						.setValue(this.blipColorSettings.blipColorByPropertyName)
+						.onChange((value) => {
+							this.blipColorSettings.blipColorByPropertyName = value.trim();
+							notify();
+						})
+				);
+		}
+
+		new Setting(container)
+			.setName("Blip color from tag")
+			.setDesc("Color note blips from a tag holding a hex code or color name, such as #fb464c or #red")
+			.addToggle((toggle) =>
+				toggle.setValue(this.blipColorSettings.blipColorByTag).onChange((value) => {
+					this.blipColorSettings.blipColorByTag = value;
+					notify();
+				})
+			);
 	}
 
 	private setupDragAndDrop(rows: HTMLElement[], onReorder: (from: number, to: number) => void): void {

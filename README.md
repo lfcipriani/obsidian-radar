@@ -4,10 +4,10 @@
 
 Visualize your notes and ideas on a radar. Group them by topic, prioritize by proximity to the center, and keep focus when juggling multiple areas at once. Do not lose sight of items that might be hiding good opportunities.
 
-> **New in 1.0.0**
-> - You can visualize backlinks between note blips 
-> - Blip setting action bar for better usability, just click on a blip to open
-> - Fixes for lint issues
+> **New in 1.1.0**
+> - You can dynamically color your blips by using Tags or Properties
+> - The radar visual configurations are stored in the radar file
+> - The skill is updated, you can update with `npx skills add lfcipriani/obsidian-radar`
 
 ![Sample: Project Focus](docs/radar-sample-project-focus.png)
 
@@ -35,11 +35,12 @@ Still not sure? Use the [skill](skills/obsidian-radar/SKILL.md) and ask your ass
 - **Export as image** — save a high-resolution PNG snapshot of the radar to your vault
 - **Easy to use** — drag notes from the file explorer directly onto the radar, access notes easily
 - **Customizable** — set colors per priority level, per category, and per blip; adjust blip size and label font size. Add new categories and priority levels without changing blip prioritization. Support multiple visualization modes.
+- **Dynamically change blip colors** — you can use tags or properties to set the color of the blips automatically by using color codes such as #a882ff, a882ff or purple. Open the settings of a Radar to set it up.
 - **Command palette** — all major actions are available as commands so you can setup global keyboard shortcuts
 - **Mobile app supported**
 - **Support for AI Workflows**: use the [obsidian-radar skill](skills/obsidian-radar/SKILL.md) to create and maintain radars from your Obsidian AI-enabled vault.
 
-## JSON Radar Spec
+## JSON Radar Spec 1.0
 
 `.radar` files are stored as UTF-8 JSON in your vault. The format is self-contained — rings, segments, blips, and display settings are all in a single file. This makes radars portable, version-controllable, and easy to generate or modify programmatically (e.g. from an AI workflow or a script).
 

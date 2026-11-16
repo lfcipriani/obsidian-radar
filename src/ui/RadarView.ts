@@ -6,7 +6,8 @@
 import { TextFileView, WorkspaceLeaf, Menu, TFile, normalizePath, Notice } from "obsidian";
 import type RadarPlugin from "../main";
 import type { RadarData, Blip, ViewState, TitleMode, DisplaySettings } from "../types";
-import { readDisplaySettings } from "../data/radarSettings";
+import { readBlipColorSettings, readDisplaySettings } from "../data/radarSettings";
+import { applyDynamicBlipColors } from "../utils/dynamicBlipColor";
 import { VIEW_TYPE_RADAR, SVG_CONFIG, DEFAULT_VIEW_STATE } from "../constants";
 import { RadarRenderer } from "./RadarRenderer";
 import { RadarToolbar } from "./RadarToolbar";
@@ -75,7 +76,9 @@ export class RadarView extends TextFileView {
 				JSON.parse(data) as Partial<RadarData>
 			);
 			this.loadDisplaySettings(this.radarData);
+			const colorsChanged = this.applyDynamicColors();
 			this.renderRadar();
+			if (colorsChanged) this.requestSave();
 		} catch (error) {
 			console.error("Failed to parse radar data:", error);
 			this.showError("Failed to load radar data - invalid JSON");
@@ -146,11 +149,14 @@ export class RadarView extends TextFileView {
 			}
 		});
 
-		// Redraw backlink lines whenever the vault's link graph is re-resolved
-		// (a link added to or removed from a note, a note renamed, etc.)
+		// Whenever the vault's metadata is re-resolved (a link, tag or property
+		// changed, a note renamed, etc.): redraw backlink lines and re-apply
+		// property/tag based blip colors. Also covers startup, when the cache
+		// isn't ready yet at setViewData().
 		this.registerEvent(
 			this.app.metadataCache.on("resolved", () => {
 				this.renderer?.renderBacklinks();
+				this.refreshDynamicColors();
 			})
 		);
 	}
@@ -256,6 +262,28 @@ export class RadarView extends TextFileView {
 		this.glowVisible = display.showGlow;
 		this.priorityLabelsVisible = display.showPriorityLevelLabels;
 		this.backlinksVisible = display.showBacklinks;
+	}
+
+	/**
+	 * Write property/tag based colors into note blips (no render, no save).
+	 * @returns true when any blip color changed
+	 */
+	private applyDynamicColors(): boolean {
+		if (!this.radarData) return false;
+		return applyDynamicBlipColors(
+			this.radarData,
+			this.app.metadataCache,
+			readBlipColorSettings(this.radarData.settings)
+		);
+	}
+
+	/**
+	 * Re-apply dynamic colors, re-rendering and saving only when something changed
+	 */
+	private refreshDynamicColors(): void {
+		if (!this.radarData || !this.applyDynamicColors()) return;
+		this.renderer?.updateData(this.radarData);
+		this.requestSave();
 	}
 
 	/**
@@ -634,6 +662,16 @@ export class RadarView extends TextFileView {
 				this.renderer?.updateData(this.radarData);
 				this.requestSave();
 			},
+			onBlipColorSettingsChanged: (settings) => {
+				if (!this.radarData) return;
+				const store = this.plugin.radarStore;
+				store.setSetting(this.radarData, "blipColorByTag", settings.blipColorByTag);
+				store.setSetting(this.radarData, "blipColorByProperty", settings.blipColorByProperty);
+				store.setSetting(this.radarData, "blipColorByPropertyName", settings.blipColorByPropertyName);
+				this.applyDynamicColors();
+				this.renderer?.updateData(this.radarData);
+				this.requestSave();
+			},
 		}).open();
 	}
 
@@ -692,6 +730,7 @@ export class RadarView extends TextFileView {
 		if (!this.radarData) return;
 
 		const blip = this.plugin.radarStore.addBlip(this.radarData, blipData);
+		this.applyDynamicColors();
 		this.renderer?.addBlip(blip);
 		this.requestSave();
 	}

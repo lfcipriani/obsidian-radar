@@ -7,8 +7,8 @@
  * left untouched in the file, so data written by other clients is never lost.
  */
 
-import type { DisplaySettings, RadarSettings, RadarSettingValue, TitleMode } from "../types";
-import { DEFAULT_DISPLAY_SETTINGS } from "../constants";
+import type { BlipColorSettings, DisplaySettings, RadarSettings, RadarSettingValue, TitleMode } from "../types";
+import { DEFAULT_BLIP_COLOR_SETTINGS, DEFAULT_DISPLAY_SETTINGS } from "../constants";
 
 const TITLE_MODES: readonly TitleMode[] = ["hide", "full", "crop"];
 
@@ -55,5 +55,23 @@ export function readDisplaySettings(settings: RadarSettings | undefined): Displa
 			DEFAULT_DISPLAY_SETTINGS.showPriorityLevelLabels
 		),
 		showBacklinks: readBoolean(settings, "showBacklinks", DEFAULT_DISPLAY_SETTINGS.showBacklinks),
+	};
+}
+
+/**
+ * Read the dynamic blip color settings, falling back to defaults (disabled)
+ * for any missing or non-compliant value.
+ */
+export function readBlipColorSettings(settings: RadarSettings | undefined): BlipColorSettings {
+	const propertyName = settings?.blipColorByPropertyName;
+	return {
+		blipColorByTag: readBoolean(settings, "blipColorByTag", DEFAULT_BLIP_COLOR_SETTINGS.blipColorByTag),
+		blipColorByProperty: readBoolean(
+			settings,
+			"blipColorByProperty",
+			DEFAULT_BLIP_COLOR_SETTINGS.blipColorByProperty
+		),
+		blipColorByPropertyName:
+			typeof propertyName === "string" ? propertyName : DEFAULT_BLIP_COLOR_SETTINGS.blipColorByPropertyName,
 	};
 }

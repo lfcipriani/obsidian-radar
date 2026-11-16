@@ -147,6 +147,33 @@ The following settings are defined. They mirror the radar toolbar toggles:
 
 Example: `{ "showBlipName": "show" }` is not a valid value, so the client ignores it and uses `"crop"`.
 
+### Dynamic blip color settings
+
+These settings are specific to the Obsidian client. They color note blips from metadata in the linked note:
+
+| Key | Type | Valid values | Default | Description |
+|---|---|---|---|---|
+| `blipColorByProperty` | boolean | `true`, `false` | `false` | Color note blips from a frontmatter property of the linked note. |
+| `blipColorByPropertyName` | string | any property name | `"color"` | Name of the frontmatter property to read the color from. Only used when `blipColorByProperty` is `true`. |
+| `blipColorByTag` | boolean | `true`, `false` | `false` | Color note blips from a tag of the linked note (e.g. `#fb464c`, `#red`). |
+
+A property or tag value is a hex code (`#rrggbb` or `#rgb`; the `#` is optional) or one of these Obsidian color names, case-insensitive:
+
+| Name | Hex |
+|---|---|
+| `red` | `#fb464c` |
+| `orange` | `#e9973f` |
+| `yellow` | `#e0ac00` |
+| `green` | `#44cf6e` |
+| `cyan` | `#53dfdd` |
+| `blue` | `#027aff` |
+| `purple` | `#a882ff` |
+| `pink` | `#fa99cd` |
+
+Color precedence for a note blip: frontmatter property → tag → the blip's `color` → `blipColor` → client default. If a note has several valid color tags, the first one wins.
+
+The resolved color is written into the blip's `color` field as `#rrggbb`. Clients that don't support these settings therefore render the last resolved color as a regular per-blip color. A client that supports them re-resolves colors from the notes when the file is loaded. Note blips whose notes have no matching property or tag keep their current `color`.
+
 ## Complete example
 
 ```json
@@ -170,7 +197,10 @@ Example: `{ "showBlipName": "show" }` is not a valid value, so the client ignore
     "showBlipName": "full",
     "showGlow": false,
     "showPriorityLevelLabels": true,
-    "showBacklinks": true
+    "showBacklinks": true,
+    "blipColorByTag": true,
+    "blipColorByProperty": true,
+    "blipColorByPropertyName": "color"
   },
   "blips": [
     {

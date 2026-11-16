@@ -52,6 +52,7 @@ src/
 │   └── HelpModal.ts           # Quick-reference help modal
 └── utils/
     ├── backlinks.ts           # Find note blips linked to each other
+    ├── dynamicBlipColor.ts    # Note blip colors from frontmatter property / tags
     ├── idGenerator.ts         # UUID generation
     ├── polarCoordinates.ts    # Polar ↔ Cartesian math + blip repositioning
     └── svgHelpers.ts          # SVG element creation helpers
@@ -63,7 +64,7 @@ src/
 - **Priority levels**: Concentric rings (1–8) indicating importance. Each level has a `maxRadius` (0–1 normalized) and an optional fill color.
 - **Categories**: Segments of the radar (3–8) for grouping blips. Each category has a `startAngle` in degrees and an optional fill color.
 - **Polar coordinates**: `r` (0–1 normalized radius, 0 = center), `theta` (degrees counterclockwise from 3 o'clock). Stored on each blip; converted to SVG Cartesian coords at render time.
-- **Blip colors**: Three-level fallback — per-blip `color` → radar-wide `blipColor` → CSS `--color-accent`. Priority levels and categories also have optional colors shown as low-opacity fills.
+- **Blip colors**: Three-level fallback — per-blip `color` → radar-wide `blipColor` → CSS `--color-accent`. Optionally, note blips get their `color` from a frontmatter property, then a tag (hex or Obsidian color name), toggled via `settings` keys `blipColorByProperty`/`blipColorByPropertyName`/`blipColorByTag`. Priority levels and categories also have optional colors shown as low-opacity fills.
 - **Blip size**: `blipRadius` (3–20 px, default 5) applies to all blips in the radar. Configurable in `CustomizeRadarModal`.
 - **File sync**: `main.ts` listens to vault `rename` and `delete` events to keep `notePath` references on note blips current across all open and closed radar files.
 

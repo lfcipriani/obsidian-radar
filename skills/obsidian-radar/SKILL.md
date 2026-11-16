@@ -16,6 +16,7 @@ A radar file (`.radar`) is a UTF-8 JSON file containing the full state of a rada
   "blipRadius": 5,
   "blipFontSize": 7,
   "blipColor": "#027aff",
+  "settings": {},
   "blips": []
 }
 ```
@@ -27,6 +28,7 @@ A radar file (`.radar`) is a UTF-8 JSON file containing the full state of a rada
 | `blipRadius` | yes | Pixel radius for all blip circles. Range: `3`–`20`. Default: `5` |
 | `blipFontSize` | yes | Pixel font size for blip labels. Range: `3`–`12`. Default: `7` |
 | `blipColor` | no | Default hex color for blips; falls back to accent color if absent |
+| `settings` | no | Flat key-value object for display/client settings. See [Settings](#settings). |
 | `blips` | yes | Items placed on the radar |
 
 ## Common Workflows
@@ -36,7 +38,7 @@ A radar file (`.radar`) is a UTF-8 JSON file containing the full state of a rada
 1. Create a `.radar` file with the full JSON structure
 2. Define 1–8 `priorityLevels` ordered innermost to outermost; the last must have `maxRadius: 1.0`
 3. Define 3–8 `categories`, each with a unique `startAngle` (0–359)
-4. Set `blipRadius`, `blipFontSize`, and optionally `blipColor`
+4. Set `blipRadius`, `blipFontSize`, and optionally `blipColor` and `settings`
 5. Add blips; leave `blips: []` if starting empty
 6. **Validate**: confirm JSON is valid; check that `maxRadius` values are ascending and the final is `1.0`
 
@@ -83,6 +85,16 @@ theta = 135        // midpoint of 90 and 180
 1. Read the file and locate the ring (`priorityLevels`) or segment (`categories`) by `id`
 2. Update `name` and/or `color`
 3. Write back — no blip coordinates change; blips are positioned by `r`/`theta`, not by ring/segment ID
+
+### 6. Color Note Blips from Their Notes
+
+1. Read the `.radar` file and set the dynamic color keys in `settings` (see [Dynamic blip color settings](#dynamic-blip-color-settings)):
+   - `"blipColorByProperty": true` and `"blipColorByPropertyName": "<property>"` to read a frontmatter property
+   - and/or `"blipColorByTag": true` to read a color tag
+2. Keep every other key already in `settings` — never drop keys you don't recognize
+3. In each linked note, add the color as a frontmatter property (`color: "#fb464c"` — quote it, or YAML treats `#` as a comment — or `color: red`) or as a tag (`#fb464c`, `#red`)
+4. Optionally, write the resolved color into each affected note blip's `color` as `#rrggbb`, so the file is correct before Obsidian opens it
+5. **Validate**: dynamic color keys have the right types; resolved blip colors are `#rrggbb`
 
 ## Priority Levels (Rings)
 
@@ -173,6 +185,52 @@ Colors are stored as hex strings (`#rrggbb`). Available presets:
 
 Any valid hex color may be used. Color fields are optional throughout — the renderer applies its own fallback (accent color for blips, no fill for rings/segments) when absent.
 
+## Settings
+
+`settings` is an optional flat key-value object. Values must be a string, boolean or number — no nested objects, arrays or `null`.
+
+The format doesn't validate setting values; each client validates the keys it understands and falls back to its default for an invalid value. When editing a file, **preserve every key in `settings`**, including unknown ones written by other clients.
+
+### Display settings
+
+These mirror the radar toolbar toggles:
+
+| Key | Type | Valid values | Default | Description |
+|-----|------|--------------|---------|-------------|
+| `showBlipName` | string | `"hide"`, `"full"`, `"crop"` | `"crop"` | How blip labels are shown: hidden, full text, or cropped |
+| `showGlow` | boolean | `true`, `false` | `true` | Show the glow halo around blips |
+| `showPriorityLevelLabels` | boolean | `true`, `false` | `true` | Show priority level labels on the rings |
+| `showBacklinks` | boolean | `true`, `false` | `true` | Show lines between note blips that link to each other |
+
+### Dynamic blip color settings
+
+Obsidian-client settings that color `"note"` blips from metadata in the linked note:
+
+| Key | Type | Valid values | Default | Description |
+|-----|------|--------------|---------|-------------|
+| `blipColorByProperty` | boolean | `true`, `false` | `false` | Color note blips from a frontmatter property of the linked note |
+| `blipColorByPropertyName` | string | any property name | `"color"` | Frontmatter property to read; only used when `blipColorByProperty` is `true` |
+| `blipColorByTag` | boolean | `true`, `false` | `false` | Color note blips from a tag of the linked note (e.g. `#fb464c`, `#red`) |
+
+A property or tag value is a hex code (`#rrggbb` or `#rgb`; the `#` is optional) or one of these Obsidian color names (case-insensitive):
+
+| Name | Hex |
+|------|-----|
+| `red` | `#fb464c` |
+| `orange` | `#e9973f` |
+| `yellow` | `#e0ac00` |
+| `green` | `#44cf6e` |
+| `cyan` | `#53dfdd` |
+| `blue` | `#027aff` |
+| `purple` | `#a882ff` |
+| `pink` | `#fa99cd` |
+
+**Color precedence for a note blip:** frontmatter property → tag → blip `color` → top-level `blipColor` → client default (accent). If a note has several valid color tags, the first one wins.
+
+The resolved color is stored in the blip's own `color` field as `#rrggbb`, so clients without this feature still render it. The Obsidian plugin re-resolves colors from the notes every time the file is loaded and overwrites `color` for blips whose note matches; blips with no match keep their current `color`. So with these settings on, a manually set `color` on a matching note blip will be replaced — change the note's property or tag instead.
+
+Tag caveat: Obsidian ignores tags made only of digits, so `#000000` or `#111111` are not recognized as tags. Use a hex containing at least one letter (`#00ff00`, `#1a1a1a`), a color name, or the frontmatter property instead.
+
 ## ID Generation
 
 Blip `id` values should be UUIDs (version 4):
@@ -197,6 +255,8 @@ After creating or editing a radar file, verify:
 7. Every `"note"` blip has a `notePath`; every `"text"` blip does not
 8. `blipRadius` is in range `3`–`20`; `blipFontSize` is in range `3`–`12`
 9. All color values are valid hex strings (`#rrggbb`)
+10. `settings`, if present, is a flat object of string/boolean/number values; known keys use valid values (`showBlipName` is `"hide"`/`"full"`/`"crop"`; `show*` and `blipColorBy*` toggles are booleans; `blipColorByPropertyName` is a string)
+11. Existing unknown `settings` keys were preserved
 
 ## Complete Example
 
@@ -217,6 +277,15 @@ After creating or editing a radar file, verify:
   "blipRadius": 6,
   "blipFontSize": 7,
   "blipColor": "#53dfdd",
+  "settings": {
+    "showBlipName": "full",
+    "showGlow": false,
+    "showPriorityLevelLabels": true,
+    "showBacklinks": true,
+    "blipColorByTag": true,
+    "blipColorByProperty": true,
+    "blipColorByPropertyName": "color"
+  },
   "blips": [
     {
       "id": "11111111-1111-1111-1111-111111111111",

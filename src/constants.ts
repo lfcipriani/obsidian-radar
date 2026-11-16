@@ -3,7 +3,7 @@
  * Default values and configuration
  */
 
-import type { PriorityLevel, Category, RadarPluginSettings, ViewState, DisplaySettings } from "./types";
+import type { PriorityLevel, Category, RadarPluginSettings, ViewState, DisplaySettings, BlipColorSettings } from "./types";
 
 /** View type identifier for the radar view */
 export const VIEW_TYPE_RADAR = "radar-view";
@@ -36,6 +36,28 @@ export const CSS_VAR_TO_HEX: Record<string, string> = {
 	"var(--color-cyan)": "#53dfdd",
 	"var(--color-blue)": "#027aff",
 	"var(--color-purple)": "#a882ff",
+};
+
+/**
+ * Obsidian's default named colors (dark theme values, matching CSS_VAR_TO_HEX).
+ * Used to resolve color names in note tags and frontmatter properties.
+ */
+export const OBSIDIAN_NAMED_COLORS: Record<string, string> = {
+	red: "#fb464c",
+	orange: "#e9973f",
+	yellow: "#e0ac00",
+	green: "#44cf6e",
+	cyan: "#53dfdd",
+	blue: "#027aff",
+	purple: "#a882ff",
+	pink: "#fa99cd",
+};
+
+/** Default dynamic blip color settings (all disabled) */
+export const DEFAULT_BLIP_COLOR_SETTINGS: BlipColorSettings = {
+	blipColorByTag: false,
+	blipColorByProperty: false,
+	blipColorByPropertyName: "color",
 };
 
 /** Default plugin settings */

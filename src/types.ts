@@ -93,6 +93,16 @@ export interface DisplaySettings {
 	showBacklinks: boolean;
 }
 
+/** Dynamic blip color settings, persisted in the radar `settings` object */
+export interface BlipColorSettings {
+	/** Color note blips from a tag holding a hex code or color name (e.g. #fb464c, #red) */
+	blipColorByTag: boolean;
+	/** Color note blips from a frontmatter property holding a hex code or color name */
+	blipColorByProperty: boolean;
+	/** Name of the frontmatter property to read the color from */
+	blipColorByPropertyName: string;
+}
+
 /** Plugin settings stored via Obsidian's data API */
 export interface RadarPluginSettings {
 	/** Default number of priority levels for new radars */

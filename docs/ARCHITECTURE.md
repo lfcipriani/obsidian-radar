@@ -34,6 +34,7 @@ src/
 │   └── HelpModal.ts           # Quick-reference help modal
 │
 └── utils/
+    ├── dynamicBlipColor.ts    # Note blip colors from frontmatter property / tags
     ├── idGenerator.ts         # UUID generation
     ├── polarCoordinates.ts    # Polar ↔ Cartesian math + blip repositioning
     └── svgHelpers.ts          # SVG element creation helpers
@@ -176,6 +177,7 @@ RadarRenderer
 - Note blips: solid filled circles
 - Text blips: hollow rings (stroke only, no fill)
 - Color priority: per-blip `color` → radar `blipColor` → CSS `--color-accent`
+- Dynamic colors (`utils/dynamicBlipColor.ts`): when enabled in the radar `settings` (`blipColorByProperty` + `blipColorByPropertyName`, `blipColorByTag`), a note blip's color is resolved from its note — frontmatter property first, then tags — as a hex code (`#fb464c`, `fff`) or an Obsidian color name (`OBSIDIAN_NAMED_COLORS`). The resolved hex is written into the blip's `color`, so other clients see a plain per-blip color. `RadarView` applies it on load, on blip add, on settings change, and on every `metadataCache` `resolved` event; blips with no match keep their current color
 - Glow halos: low-opacity circle at 2× radius behind each blip
 - Titles: truncated to 15 chars with ellipsis; full title revealed on hover via CSS
 
@@ -275,7 +277,7 @@ RadarStore
 
 `normalizeRadarData()` runs on every load to handle legacy data (e.g. Obsidian CSS variable strings converted to hex) and enforce invariants.
 
-`data/radarSettings.ts` keeps only string/boolean/number entries of `settings` (unknown keys are preserved) and `readDisplaySettings()` validates the toolbar toggles (`showBlipName`, `showGlow`, `showPriorityLevelLabels`, `showBacklinks`), falling back to defaults for invalid values. `RadarView` loads these on `setViewData()` and writes them back on each toggle.
+`data/radarSettings.ts` keeps only string/boolean/number entries of `settings` (unknown keys are preserved) and `readDisplaySettings()` validates the toolbar toggles (`showBlipName`, `showGlow`, `showPriorityLevelLabels`, `showBacklinks`), falling back to defaults for invalid values. `readBlipColorSettings()` does the same for the dynamic color keys (`blipColorByTag`, `blipColorByProperty`, `blipColorByPropertyName`), all disabled by default. `RadarView` loads these on `setViewData()` and writes them back on each toggle.
 
 ### 8. Modals
 
@@ -283,7 +285,7 @@ RadarStore
 |---|---|
 | `AddBlipModal` | `FuzzySuggestModal` — pick a markdown file to add as a note blip |
 | `AddTextModal` | Text input — create a free-text blip (Enter to submit) |
-| `CustomizeRadarModal` | Drag-and-drop reorder priorities/categories; add/remove; color swatches (7 presets + custom picker); blip size slider; default blip color picker |
+| `CustomizeRadarModal` | Drag-and-drop reorder priorities/categories; add/remove; color swatches (7 presets + custom picker); blip size slider; default blip color picker; color-from-property / color-from-tag toggles |
 | `HelpModal` | Quick-reference cheat sheet (platform-aware: shows Cmd on macOS, Ctrl elsewhere) |
 
 `CustomizeRadarModal` redistributes `maxRadius` values and `startAngle` values automatically when priorities/categories are reordered, added, or removed. Changes propagate via callbacks: `onPrioritiesChanged`, `onCategoriesChanged`, `onBlipRadiusChanged`, `onBlipColorChanged`.
