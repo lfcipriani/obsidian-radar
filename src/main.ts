@@ -11,8 +11,8 @@ import { RadarStore } from "./data/RadarStore";
 import { registerCommands } from "./commands";
 
 export default class RadarPlugin extends Plugin {
-	settings: RadarPluginSettings;
-	radarStore: RadarStore;
+	settings!: RadarPluginSettings;
+	radarStore!: RadarStore;
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
